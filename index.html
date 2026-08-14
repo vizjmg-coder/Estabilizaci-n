@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gobernación de Antioquia | Centro de Control Territorial - Red Vial Secundaria</title>
+  <meta name="description" content="Centro de Control Territorial para el seguimiento y visualización de la intervención y estabilización de la Red Vial Secundaria de Antioquia.">
+  
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- 1. INSTITUTIONAL HEADER -->
+  <header class="gov-header">
+    <div class="header-left">
+      <a href="#" class="gov-logo-badge" title="Gobernación de Antioquia">
+        <div class="gov-escudo-container">
+          <img src="assets/escudo.jpg" alt="Escudo Gobernación de Antioquia" class="gov-escudo-img">
+        </div>
+        <div class="gov-titles">
+          <span class="gov-entity">GOBERNACIÓN DE <span>ANTIOQUIA</span></span>
+          <span class="gov-sub-title">Red Vial Secundaria • República de Colombia</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-center-badge">
+      <div class="badge-pulse-dot"></div>
+      <span class="badge-text">Centro de Control Territorial — Estabilización 634 km</span>
+    </div>
+
+    <div class="header-right-actions">
+      <button class="header-btn" id="btn-presentation-mode" title="Alternar modo pantalla completa para juntas">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+        <span>Modo Presentación</span>
+      </button>
+
+      <button class="header-btn primary" id="btn-export-pdf" title="Exportar Ficha Ejecutiva Territorial en PDF">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span>Exportar Ficha PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. GLOBAL FILTERS TOOLBAR -->
+  <nav class="filter-toolbar" aria-label="Filtros de navegación territorial">
+    <div class="filter-group">
+      <div class="filter-item">
+        <label class="filter-label" for="filter-subregion">Subregión:</label>
+        <select id="filter-subregion" class="filter-select">
+          <option value="ALL">Todas las Subregiones</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label" for="filter-municipio">Municipio:</label>
+        <select id="filter-municipio" class="filter-select">
+          <option value="ALL">Todos los Municipios</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label" for="filter-circuito">Circuito:</label>
+        <select id="filter-circuito" class="filter-select" style="max-width: 260px;">
+          <option value="ALL">Todos los Circuitos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="search-wrapper">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="global-search" class="filter-input search-input" placeholder="Buscar municipio, circuito o subregión..." aria-label="Búsqueda global">
+      </div>
+
+      <button id="btn-clear-filters" class="btn-clear-filters" title="Restablecer todos los filtros">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"></polyline>
+          <polyline points="23 20 23 14 17 14"></polyline>
+          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+        </svg>
+        <span>Limpiar</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 3. QUICK SUBREGION PILLS -->
+  <div class="subregion-pills-bar" id="subregion-pills-container">
+    <!-- Rendered dynamically by JS -->
+  </div>
+
+  <!-- 4. KPIS BANNER -->
+  <section class="kpi-section" aria-label="Indicadores clave de desempeño">
+    <div class="kpi-grid">
+      
+      <!-- KPI 1 -->
+      <div class="kpi-card kpi-highlight">
+        <div class="kpi-card-header">
+          <span class="kpi-title">KM de Intervención</span>
+          <div class="kpi-icon-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+              <line x1="4" y1="22" x2="4" y2="15"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpi-km-value">634.43</span>
+          <span class="kpi-unit">km</span>
+        </div>
+        <div class="kpi-subtext">
+          <span class="badge-pill">Meta Total</span>
+          <span>Red secundaria</span>
+        </div>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title">Circuitos Viales</span>
+          <div class="kpi-icon-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpi-circuitos-value">29</span>
+          <span class="kpi-unit">corredores</span>
+        </div>
+        <div class="kpi-subtext">Priorizados para estabilización</div>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title">Subregiones</span>
+          <div class="kpi-icon-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              <line x1="8" y1="2" x2="8" y2="18"></line>
+              <line x1="16" y1="6" x2="16" y2="22"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpi-subregiones-value">8</span>
+          <span class="kpi-unit">de 9</span>
+        </div>
+        <div class="kpi-subtext">Cobertura subregional activa</div>
+      </div>
+
+      <!-- KPI 4 -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title">Municipios Conectados</span>
+          <div class="kpi-icon-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpi-municipios-value">64</span>
+          <span class="kpi-unit">municipios</span>
+        </div>
+        <div class="kpi-subtext">Con intervención vial directa</div>
+      </div>
+
+      <!-- KPI 5 -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-title">Cobertura Municipal</span>
+          <div class="kpi-icon-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+              <path d="M2 12h20"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpi-cobertura-value">51.2%</span>
+          <span class="kpi-unit">del territorio</span>
+        </div>
+        <div class="kpi-subtext">Alcance territorial directo</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5. MAIN WORKSPACE (MAP 58% + ANALYTICS 42%) -->
+  <main class="main-dashboard-grid">
+    
+    <!-- LEFT PANEL: MAPA DE ANTIOQUIA (PRIMARY VISUAL WEIGHT) -->
+    <div class="panel-card map-panel">
+      <div class="panel-header">
+        <div class="panel-title-wrapper">
+          <div class="panel-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+          </div>
+          <div>
+            <h2 class="panel-title">Geovisor Territorial de Antioquia</h2>
+            <div class="panel-subtitle">Visualización espacial interactiva de municipios y red vial secundaria</div>
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button id="btn-reset-map-view" class="header-btn" style="color: #0f172a; border-color: #cbd5e1;" title="Restablecer vista de Antioquia">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Centrar</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="map-viewport-container">
+        <!-- Leaflet Map Canvas -->
+        <div id="leaflet-map"></div>
+
+        <!-- View Mode Switcher -->
+        <div class="map-view-switcher">
+          <button class="view-mode-btn active" data-mode="general">General</button>
+          <button class="view-mode-btn" data-mode="subregional">Subregional</button>
+          <button class="view-mode-btn" data-mode="vial">Red Vial</button>
+          <button class="view-mode-btn" data-mode="intervencion">Intervenciones</button>
+        </div>
+
+        <!-- Floating Layer Control -->
+        <div class="map-floating-overlay">
+          <div class="map-control-card">
+            <div class="map-control-header">
+              <span>Capas Activas</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+            </div>
+            <div class="layer-toggle-list">
+              <label class="layer-toggle-item">
+                <input type="checkbox" class="layer-checkbox" data-layer="municipios" checked>
+                <span class="layer-legend-bullet bullet-municipios"></span>
+                <span>Municipios (125)</span>
+              </label>
+
+              <label class="layer-toggle-item">
+                <input type="checkbox" class="layer-checkbox" data-layer="secundaria" checked>
+                <span class="layer-legend-bullet bullet-secundaria"></span>
+                <span>Red Secundaria</span>
+              </label>
+
+              <label class="layer-toggle-item">
+                <input type="checkbox" class="layer-checkbox" data-layer="intervenciones" checked>
+                <span class="layer-legend-bullet bullet-prioritarias"></span>
+                <span>Estabilización (634 km)</span>
+              </label>
+
+              <label class="layer-toggle-item">
+                <input type="checkbox" class="layer-checkbox" data-layer="circuitos" checked>
+                <span class="layer-legend-bullet bullet-circuitos"></span>
+                <span>Circuitos (1-29)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Territory Status Tag -->
+        <div class="map-status-bar">
+          <span class="map-status-dot"></span>
+          <span id="map-active-status">Cargando territorio...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: ANALYTICS, CHARTS & RANKINGS -->
+    <div class="analytics-column">
+      
+      <!-- Chart 1: Km por Subregión -->
+      <div class="panel-card chart-card-compact">
+        <div class="panel-header">
+          <div class="panel-title-wrapper">
+            <div class="panel-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <h3 class="panel-title">Intervención por Subregión</h3>
+          </div>
+          <span style="font-size: 0.7rem; color: #64748b;">(Clic para filtrar)</span>
+        </div>
+        <div class="chart-body" id="subregion-bar-chart-container">
+          <!-- Dynamic Horizontal Bars -->
+        </div>
+      </div>
+
+      <!-- Chart 2: Distribución Territorial & Gauge -->
+      <div class="panel-card chart-card-compact">
+        <div class="panel-header">
+          <div class="panel-title-wrapper">
+            <div class="panel-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a10 10 0 0 1 10 10"></path>
+              </svg>
+            </div>
+            <h3 class="panel-title">Distribución & Alcance Territorial</h3>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div id="coverage-gauge-container"></div>
+          <div style="height: 160px; position: relative;">
+            <canvas id="donut-distribution-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 3: Top Corredores Ranking -->
+      <div class="panel-card chart-card-compact">
+        <div class="panel-header">
+          <div class="panel-title-wrapper">
+            <div class="panel-icon" style="color: #d4af37;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </div>
+            <h3 class="panel-title">Principales Corredores por Longitud</h3>
+          </div>
+          <span style="font-size: 0.7rem; color: #64748b;">Top 8</span>
+        </div>
+        <div class="chart-body" id="ranking-circuits-container">
+          <!-- Dynamic Ranking List -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 6. BOTTOM FULL SECTION: SUBREGIONS GALLERY & CIRCUITS TABLE -->
+  <section class="bottom-section" aria-label="Detalle de subregiones y circuitos">
+    
+    <!-- Subregions Cards Grid -->
+    <div class="panel-card">
+      <div class="panel-header">
+        <div class="panel-title-wrapper">
+          <div class="panel-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </div>
+          <h3 class="panel-title">Panorama Territorial por Subregiones</h3>
+        </div>
+      </div>
+      <div style="padding: 14px;" id="subregion-cards-container">
+        <!-- Rendered Subregion Cards -->
+      </div>
+    </div>
+
+    <!-- Detailed Circuits Table -->
+    <div class="panel-card table-card">
+      <div class="panel-header">
+        <div class="panel-title-wrapper">
+          <div class="panel-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+          </div>
+          <h3 class="panel-title">Listado Maestro de Corredores y Circuitos Priorizados</h3>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre del Circuito</th>
+              <th>Subregión</th>
+              <th>Km a Intervenir</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="circuits-table-body">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer" id="table-pagination-footer">
+        <!-- Pagination controls -->
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 7. LATERAL DETAIL DRAWER (SLIDE OVER) -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer-panel" id="drawer-panel" aria-label="Panel de detalle de circuito">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-header-tag" id="drawer-code-tag">CIR-01 • SUBREGIÓN</div>
+        <h3 class="drawer-header-title" id="drawer-title">Nombre del Circuito</h3>
+      </div>
+      <button class="btn-drawer-close" id="btn-drawer-close" aria-label="Cerrar panel">✕</button>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <!-- Injected by uiController -->
+    </div>
+  </aside>
+
+  <!-- 8. MODAL FOR MUNICIPIO DETAILS -->
+  <div class="gov-modal-backdrop" id="gov-modal-backdrop">
+    <div class="gov-modal-card">
+      <div class="gov-modal-header">
+        <h3 id="modal-title" style="font-size: 1rem; font-weight: 800;">Municipio</h3>
+        <button id="btn-modal-close" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+      <div class="gov-modal-body" id="modal-body">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Libraries -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="js/libs/jspdf.umd.min.js"></script>
+<script src="js/libs/jspdf.plugin.autotable.min.js"></script>
+
+<!-- Application Entry Point -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>
