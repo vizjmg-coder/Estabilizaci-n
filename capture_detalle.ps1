@@ -11,12 +11,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (window.app) {
       window.app.switchTab('detalle');
       window.app.selectCorridorByCode('E-18');
-      setTimeout(() => {
-        if (window.app.abscissasModule) {
-          const c = window.app.currentCorridor;
-          window.app.abscissasModule.setMarkerKm(1.150, c.longitud_contractual, c.obras_puntuales);
-        }
-      }, 400);
     }
   }, 400);
 });
@@ -38,10 +32,10 @@ $proc = Start-Process $chromePath -ArgumentList @(
     '--headless=new',
     '--disable-gpu',
     "--user-data-dir=$tempUserData",
-    '--virtual-time-budget=3500',
-    '--window-size=1920,4400',
+    '--virtual-time-budget=4000',
+    '--window-size=1920,6000',
     "--screenshot=$tempShot",
-    "http://localhost:8080/test_detalle.html"
+    "http://localhost:8085/test_detalle.html"
 ) -Wait -PassThru -NoNewWindow
 
 if (Test-Path $tempShot) {
