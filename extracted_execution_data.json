@@ -1,0 +1,1645 @@
+﻿[
+    {
+        "Slide":  3,
+        "Corredor":  "Abejorral – Santa Bárbara – El Cairo – La Elvira",
+        "AlcanceReal":  "16,87 km · dif. 6,90 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "3,40 %",
+        "PlazoTranscurrido":  "38,1 %",
+        "Fechas":  "Inicio: 01/06/2026 Terminación: 20/04/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "3",
+                                  "45",
+                                  "22",
+                                  "22",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "23.770",
+                                  "31.489",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "23.770",
+                                  "28.524",
+                                  "1.164",
+                                  "1.164",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "4.754",
+                                  "256",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "118.850",
+                                  "118.850",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "71.310",
+                                  "71.310",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  5,
+        "Corredor":  "La Frontera (Ruta 56) – Mesopotamia – Abejorral",
+        "AlcanceReal":  "18,26 km · dif. 7,23 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "0,63 %",
+        "PlazoTranscurrido":  "38,1 %",
+        "Fechas":  "Inicio: 01/06/2026 Terminación: 20/04/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "57",
+                                  "75",
+                                  "9",
+                                  "9",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "25.490",
+                                  "33.715",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "25.490",
+                                  "25.447",
+                                  "193",
+                                  "193",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "5.098",
+                                  "428",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "127.450",
+                                  "127.450",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "76.470",
+                                  "76.470",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  7,
+        "Corredor":  "San Vicente – El Peñol",
+        "AlcanceReal":  "12,70 km · dif. 5,45 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "Sin dato",
+        "PlazoTranscurrido":  "38,1 %",
+        "Fechas":  "Inicio: 01/06/2026 Terminación: 20/04/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "54",
+                                  "54",
+                                  "6",
+                                  "6",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "18.150",
+                                  "18.360",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "18.130",
+                                  "13.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "3.630",
+                                  "7.000",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "90.750",
+                                  "68.750",
+                                  "1.295",
+                                  "1.295",
+                                  "0"
+                              ],
+                              [
+                                  "ml",
+                                  "18.150",
+                                  "12.700",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  10,
+        "Corredor":  "Miserenga – Ebéjico",
+        "AlcanceReal":  "0,81 km · dif. 0,19 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "4,93 %",
+        "PlazoTranscurrido":  "42,9 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K1+000 | CAMPO | Topografía",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "10",
+                                  "0",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "1.000",
+                                  "1.000",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "1.000",
+                                  "1.000",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "200",
+                                  "0",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m²",
+                                  "5.000",
+                                  "0",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "3.000",
+                                  "2.000",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m³",
+                                  "—",
+                                  "528",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  12,
+        "Corredor":  "El Botón – Paso Ancho – Frontino",
+        "AlcanceReal":  "14,87 km · dif. 10,13 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "18,25%",
+        "PlazoTranscurrido":  "42,9 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "102",
+                                  "94",
+                                  "87",
+                                  "94",
+                                  ""
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "25.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "25.000",
+                                  "70",
+                                  "100",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "5.000",
+                                  "1.500",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m²",
+                                  "125.000",
+                                  "125.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "75.000",
+                                  "50.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  14,
+        "Corredor":  "Ebéjico – Heliconia – Medellín",
+        "AlcanceReal":  "17,95 km · dif. 10,81 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "14,74 %",
+        "PlazoTranscurrido":  "42,9 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "153",
+                                  "75",
+                                  "29",
+                                  "29",
+                                  ""
+                              ],
+                              [
+                                  "m",
+                                  "28.760",
+                                  "40.286",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "28.760",
+                                  "28.760",
+                                  "15",
+                                  "15",
+                                  ""
+                              ],
+                              [
+                                  "m",
+                                  "5.752",
+                                  "5.752",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "143.800",
+                                  "143.800",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "86.280",
+                                  "57.552",
+                                  "—",
+                                  "0",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  16,
+        "Corredor":  "Sopetrán – Horizontes – Belmira",
+        "AlcanceReal":  "25,30 km · dif. 9,89 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "14 %",
+        "PlazoTranscurrido":  "42,9 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K5 | K10 | K15",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "11",
+                                  "11",
+                                  "9",
+                                  "9",
+                                  "+1"
+                              ],
+                              [
+                                  "m",
+                                  "35.190",
+                                  "49.266",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "35.1 90",
+                                  "35.190",
+                                  "4.767",
+                                  "5000",
+                                  "+351,14"
+                              ],
+                              [
+                                  "m",
+                                  "7.038",
+                                  "2.500",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "175.950",
+                                  "172.431",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "105.570",
+                                  "70.380",
+                                  "0",
+                                  "0",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  19,
+        "Corredor":  "San Pedro de Urabá – Necoclí",
+        "AlcanceReal":  "39,99 km · dif. 18,66 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "6,65 %",
+        "PlazoTranscurrido":  "44,0 %",
+        "Fechas":  "Inicio: 04/02/2026 Terminación: 03/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K5 | K10 | K15",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "71",
+                                  "104",
+                                  "40",
+                                  "41",
+                                  "+1"
+                              ],
+                              [
+                                  "m",
+                                  "58.650",
+                                  "69.373",
+                                  "500",
+                                  "500",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "58.650",
+                                  "63.066",
+                                  "6.970,36",
+                                  "10.992,66",
+                                  "+4.022,3"
+                              ],
+                              [
+                                  "m",
+                                  "11.730",
+                                  "5.867",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "293.250",
+                                  "315.333",
+                                  "0",
+                                  "2.560",
+                                  "+2.560"
+                              ],
+                              [
+                                  "m",
+                                  "175.950",
+                                  "189.200",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  21,
+        "Corredor":  "Mutatá – Pavarandó",
+        "AlcanceReal":  "10,00 km · dif. 0,00 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "39,53 %",
+        "PlazoTranscurrido":  "44,0 %",
+        "Fechas":  "Inicio: 04/02/2026 Terminación: 03/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K1 | K2 | K3",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "km",
+                                  "10",
+                                  "10",
+                                  "10",
+                                  "0"
+                              ],
+                              [
+                                  "und",
+                                  "40",
+                                  "40",
+                                  "40",
+                                  "0"
+                              ],
+                              [
+                                  "und",
+                                  "20",
+                                  "16",
+                                  "16",
+                                  "0"
+                              ],
+                              [
+                                  "und",
+                                  "40",
+                                  "11",
+                                  "12",
+                                  "+1"
+                              ],
+                              [
+                                  "m",
+                                  "5.000",
+                                  "2.420",
+                                  "2.620",
+                                  "+200"
+                              ],
+                              [
+                                  "km",
+                                  "9,663",
+                                  "0,24",
+                                  "1,49",
+                                  "+1,25"
+                              ],
+                              [
+                                  "m",
+                                  "10.000",
+                                  "0",
+                                  "383",
+                                  "+383"
+                              ],
+                              [
+                                  "m",
+                                  "2.000",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "ml",
+                                  "30.000",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  23,
+        "Corredor":  "El Tres – San Pedro de Urabá",
+        "AlcanceReal":  "15,00 km · dif. 7,00 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "5,04 %",
+        "PlazoTranscurrido":  "44,0 %",
+        "Fechas":  "Inicio: 04/02/2026 Terminación: 03/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K5 | K10 | K15",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "34",
+                                  "50",
+                                  "0",
+                                  "5",
+                                  "+5"
+                              ],
+                              [
+                                  "m",
+                                  "22.000",
+                                  "22.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "22.000",
+                                  "18.372",
+                                  "0",
+                                  "1.014",
+                                  "+1.014"
+                              ],
+                              [
+                                  "m",
+                                  "4.440",
+                                  "161",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "5.940",
+                                  "132.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "66.000",
+                                  "66.000",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  25,
+        "Corredor":  "Arboletes – San Pedro de Urabá",
+        "AlcanceReal":  "21,60 km · dif. 8,40 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "0,02 %",
+        "PlazoTranscurrido":  "44,0 %",
+        "Fechas":  "Inicio: 04/02/2026 ·   Terminación: 03/08/2027 ·   Al: 02/10/2026 ·   240 de 545 días | 44,0 % | Longitud | 30,00 km | Alcance real 21,60 km · dif. 8,40 km | Valor total del corredor",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "62",
+                                  "91",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "30.000",
+                                  "44.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "30.000",
+                                  "44.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "6.000",
+                                  "2.933",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "150.000",
+                                  "174.000",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "90.000",
+                                  "90.000",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  28,
+        "Corredor":  "Remedios – La Y de la Virgen – Puerto Berrío",
+        "AlcanceReal":  "25,00 km · dif. 0,00 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "3,97 %",
+        "PlazoTranscurrido":  "42,9 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "km",
+                                  "25",
+                                  "25",
+                                  "25",
+                                  "0"
+                              ],
+                              [
+                                  "und",
+                                  "100",
+                                  "90",
+                                  "90",
+                                  "0"
+                              ],
+                              [
+                                  "und",
+                                  "108",
+                                  "24",
+                                  "24",
+                                  "+40,5 ml"
+                              ],
+                              [
+                                  "und",
+                                  "108",
+                                  "0",
+                                  "0",
+                                  "+6,74 ml"
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "170",
+                                  "220",
+                                  "+220"
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "80",
+                                  "960",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "200",
+                                  "390",
+                                  "+0,17"
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "6.000",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "ml",
+                                  "N/A",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  31,
+        "Corredor":  "Salgar – La Cámara – La Quiebra",
+        "AlcanceReal":  "11,42 km · dif. 4,51 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "Sin dato",
+        "PlazoTranscurrido":  "65,5 %",
+        "Fechas":  "Inicio: 05/02/2026 Terminación: 05/02/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Actividad",
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "Topografía",
+                                  "km",
+                                  "15,93",
+                                  "15,93",
+                                  "15,93",
+                                  "0"
+                              ],
+                              [
+                                  "Apiques",
+                                  "und",
+                                  "64",
+                                  "64",
+                                  "64",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción alcantarillas",
+                                  "und",
+                                  "77",
+                                  "21",
+                                  "21",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción cunetas",
+                                  "m",
+                                  "15.930",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción filtros",
+                                  "m",
+                                  "15.930",
+                                  "104",
+                                  "230",
+                                  "+126"
+                              ],
+                              [
+                                  "Construcción bordillos",
+                                  "m",
+                                  "3.186",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Estabilización",
+                                  "m²",
+                                  "79.650",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Señalización vial",
+                                  "m",
+                                  "47.790",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  33,
+        "Corredor":  "Valparaíso – Támesis",
+        "AlcanceReal":  "14,90 km · dif. 7,61 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "Sin dato",
+        "PlazoTranscurrido":  "65,5 %",
+        "Fechas":  "Inicio: 05/02/2026 Terminación: 05/02/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Actividad",
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "Topografía",
+                                  "km",
+                                  "22,51",
+                                  "22,51",
+                                  "22,51",
+                                  "0"
+                              ],
+                              [
+                                  "Apiques",
+                                  "und",
+                                  "90",
+                                  "90",
+                                  "90",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción alcantarillas",
+                                  "und",
+                                  "136",
+                                  "18",
+                                  "18",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción cunetas",
+                                  "m",
+                                  "22.510",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción filtros",
+                                  "m",
+                                  "22.510",
+                                  "80",
+                                  "128",
+                                  "+48"
+                              ],
+                              [
+                                  "Construcción bordillos",
+                                  "m",
+                                  "4.502",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Estabilización",
+                                  "m²",
+                                  "112.550",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Señalización vial",
+                                  "m",
+                                  "67.530",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  35,
+        "Corredor":  "Pueblorrico – San José – Ye a la Bodega – La Bodega (Andes)",
+        "AlcanceReal":  "",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "17,16 %",
+        "PlazoTranscurrido":  "69,8 %",
+        "Fechas":  "Inicio: 11/02/2026 Terminación: 11/01/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Actividad",
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "Topografía",
+                                  "km",
+                                  "22,39",
+                                  "22,39",
+                                  "22,39",
+                                  "0"
+                              ],
+                              [
+                                  "Apiques",
+                                  "und",
+                                  "—",
+                                  "100 %",
+                                  "100 %",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción alcantarillas",
+                                  "und",
+                                  "108",
+                                  "17",
+                                  "18",
+                                  "+1"
+                              ],
+                              [
+                                  "Construcción cunetas",
+                                  "m",
+                                  "22.390",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Construcción filtros",
+                                  "m",
+                                  "22.390",
+                                  "995",
+                                  "1.700",
+                                  "+705"
+                              ],
+                              [
+                                  "Construcción bordillos",
+                                  "m",
+                                  "4.478",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Estabilización",
+                                  "m²",
+                                  "111.950",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "Señalización vial",
+                                  "m",
+                                  "67.170",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  38,
+        "Corredor":  "Caramanta – Cristales – San Roque",
+        "AlcanceReal":  "11,81 km · dif. 8,83 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "0,00 %",
+        "PlazoTranscurrido":  "59,5 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/03/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | E-3a Caramanta – Cristales",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "km",
+                                  "20,64",
+                                  "13,6",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "83",
+                                  "83",
+                                  "83",
+                                  "0"
+                              ],
+                              [
+                                  "und",
+                                  "128",
+                                  "685 m",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "N/A",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "N/A",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "20.640",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "20.640",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "4.128",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "20,64",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "N/A",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "13,64",
+                                  "0,04",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "ml",
+                                  "61.920",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  40,
+        "Corredor":  "San Rafael – San Roque – Santo Domingo – Alejandría",
+        "AlcanceReal":  "13,13 km · dif. 10,33 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "0,00 %",
+        "PlazoTranscurrido":  "59,5 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/03/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "km",
+                                  "23,46",
+                                  "20,86",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "98",
+                                  "s.r.",
+                                  "98",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "205",
+                                  "49",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "111",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "111",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "23.460",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "23.460",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "4.692",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "23,46",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "N/A",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "23,46",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "ml",
+                                  "70.380",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  42,
+        "Corredor":  "Amalfi – Portachuelos – Santa Isabel",
+        "AlcanceReal":  "5,80 km · dif. 4,20 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "0,00 %",
+        "PlazoTranscurrido":  "59,5 %",
+        "Fechas":  "Inicio: 10/02/2026 Terminación: 10/03/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K1 | K2 | K3",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "km",
+                                  "10",
+                                  "6",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "41",
+                                  "s.r.",
+                                  "41",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "101",
+                                  "23",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "50",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "50",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "10.000",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "10.000",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "2.000",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "10",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "N/A",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "10",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "ml",
+                                  "30.000",
+                                  "0",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  45,
+        "Corredor":  "Cáceres – El Tigre – Alto de Tamaná – La Chilona",
+        "AlcanceReal":  "17,87 km · dif. 7,13 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "17,16 %",
+        "PlazoTranscurrido":  "69,8 %",
+        "Fechas":  "Inicio: 11/02/2026 Terminación: 11/01/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K2 | K4 | K6",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "162",
+                                  "60",
+                                  "16",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "2.800",
+                                  "—",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "25.000",
+                                  "25.000",
+                                  "3.449",
+                                  "8.400",
+                                  "+4.951"
+                              ],
+                              [
+                                  "m",
+                                  "2.500",
+                                  "3.750",
+                                  "—",
+                                  "0",
+                                  "—"
+                              ],
+                              [
+                                  "m²",
+                                  "125.000",
+                                  "125.000",
+                                  "1.305",
+                                  "2.355",
+                                  "+1.050"
+                              ],
+                              [
+                                  "m",
+                                  "125.000",
+                                  "125.000",
+                                  "—",
+                                  "0",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  48,
+        "Corredor":  "Santa Rosa – Carolina del Príncipe",
+        "AlcanceReal":  "23,82 km · dif. 9,85 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "11,25 %",
+        "PlazoTranscurrido":  "42,7 %",
+        "Fechas":  "Inicio: 11/02/2026 Terminación: 11/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K33+670 | ■ Natural ■ Cal ■ Cemento ■ TSD ■ MDC-19 ■ Ejecutado ■ Limpieza alcantarillas ■ Alcantarilla nueva ■ Reemplazada | Estructura aprobada K0+000 – K10+250 · tono claro = aprobada, tono fuerte = ejecutada | AVANCE POR ACTIVIDAD",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "113",
+                                  "230",
+                                  "67",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "23.800",
+                                  "33.670",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "23.800",
+                                  "33.670",
+                                  "1.073",
+                                  "6.660",
+                                  "+5.587"
+                              ],
+                              [
+                                  "m",
+                                  "6.734",
+                                  "33.670",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "85",
+                                  "85",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "23,8",
+                                  "34",
+                                  "0,2",
+                                  "7,42",
+                                  "+7,22"
+                              ],
+                              [
+                                  "km",
+                                  "23,8",
+                                  "34",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "—",
+                                  "34",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    },
+    {
+        "Slide":  50,
+        "Corredor":  "Entrerríos – Labores – San José de la Montaña",
+        "AlcanceReal":  "25,70 km · dif. 14,25 km",
+        "AvanceFisico":  "",
+        "AvanceFinanciero":  "10,80 %",
+        "PlazoTranscurrido":  "42,7 %",
+        "Fechas":  "Inicio: 11/02/2026 Terminación: 11/08/2027 Corte: 25/09/2026 | AVANCE POR ABSCISA | K0 | K5 | K10 | K15",
+        "ActivityTable":  [
+                              [
+                                  "Unidad",
+                                  "Presupuestada",
+                                  "Real",
+                                  "Ejec. anterior",
+                                  "Ejec. actual",
+                                  "Δ semana"
+                              ],
+                              [
+                                  "und",
+                                  "100",
+                                  "336",
+                                  "664,6 m",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "m",
+                                  "25.700",
+                                  "39.950",
+                                  "0",
+                                  "0",
+                                  "0"
+                              ],
+                              [
+                                  "m",
+                                  "25.700",
+                                  "39.950",
+                                  "3.250",
+                                  "5.500",
+                                  "+2.250"
+                              ],
+                              [
+                                  "m",
+                                  "7.990",
+                                  "39.950",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "und",
+                                  "75",
+                                  "75",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "25,7",
+                                  "40",
+                                  "2.063 m³",
+                                  "1,25",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "25,7",
+                                  "40",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "—",
+                                  "6,15",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ],
+                              [
+                                  "km",
+                                  "—",
+                                  "39,950",
+                                  "s.r.",
+                                  "s.r.",
+                                  "—"
+                              ]
+                          ]
+    }
+]

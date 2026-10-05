@@ -1,480 +1,689 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gobernación de Antioquia | Centro de Control Territorial - Red Vial Secundaria</title>
-  <meta name="description" content="Centro de Control Territorial para el seguimiento y visualización de la intervención y estabilización de la Red Vial Secundaria de Antioquia.">
-  
-  <!-- Google Fonts: Inter & Outfit -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <title>Programa de Estabilización de Vías de Antioquia · Dashboard Institucional</title>
+  <meta name="description" content="Dashboard dinámico y ejecutivo del Programa de Estabilización de vías en el Departamento de Antioquia. Visualización interactiva de variación de alcances, estructuras de pavimento, abscisas y cartografía GIS.">
 
-  <!-- Application Stylesheets -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/map.css">
-  <link rel="stylesheet" href="css/components.css">
+  <!-- External Styles & Fonts -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <div class="app-container">
 
-<div class="app-container">
-
-  <!-- 1. INSTITUTIONAL HEADER -->
-  <header class="gov-header">
-    <div class="header-left">
-      <a href="#" class="gov-logo-badge" title="Gobernación de Antioquia">
-        <div class="gov-escudo-container">
-          <img src="assets/escudo.jpg" alt="Escudo Gobernación de Antioquia" class="gov-escudo-img">
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+      <div class="brand-section">
+        <img src="assets/logo_antioquia.png" alt="Gobernación de Antioquia" class="brand-logo-img" />
+        <div class="brand-info">
+          <div class="brand-title">
+            ESTABILIZACIÓN DE VÍAS
+            <span class="brand-badge">Antioquia 2026</span>
+          </div>
+          <span class="brand-subtitle">Secretaría de Infraestructura Física · Control de Variación de Alcances</span>
         </div>
-        <div class="gov-titles">
-          <span class="gov-entity">GOBERNACIÓN DE <span>ANTIOQUIA</span></span>
-          <span class="gov-sub-title">Red Vial Secundaria • República de Colombia</span>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" aria-label="Secciones del Dashboard">
+        <button class="tab-btn active" data-tab="resumen" id="tabResumen">
+          <i class="fas fa-chart-pie"></i> Resumen Departamental
+        </button>
+        <button class="tab-btn" data-tab="detalle" id="tabDetalle">
+          <i class="fas fa-road"></i> Detalle por Corredor
+        </button>
+        <button class="tab-btn" data-tab="matriz" id="tabMatriz">
+          <i class="fas fa-layer-group"></i> Matriz de Pavimentos
+        </button>
+        <button class="tab-btn" data-tab="comparativa" id="tabComparativa">
+          <i class="fas fa-table-columns"></i> Comparativa de Lotes
+        </button>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="top-actions">
+        <button class="btn-icon" id="themeToggleBtn" title="Cambiar tema (Claro/Oscuro)">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-primary" id="printReportBtn" title="Exportar ficha técnica y ejecutiva en PDF">
+          <i class="fas fa-file-pdf"></i> Exportar Ficha
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Executive Banner -->
+    <section class="hero-banner">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>Programa Departamental de Estabilización de Vías</h1>
+          <p>
+            Monitoreo en tiempo real de los 8 Lotes y 29 corredores estratégicos. Control de variación de alcances contractuales, optimización de estructuras estratigráficas de pavimento y progresión física por abscisas.
+          </p>
         </div>
-      </a>
-    </div>
-
-    <div class="header-center-badge">
-      <div class="badge-pulse-dot"></div>
-      <span class="badge-text">Centro de Control Territorial — Estabilización 634 km</span>
-    </div>
-
-    <div class="header-right-actions">
-      <button class="header-btn" id="btn-presentation-mode" title="Alternar modo pantalla completa para juntas">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-          <line x1="8" y1="21" x2="16" y2="21"></line>
-          <line x1="12" y1="17" x2="12" y2="21"></line>
-        </svg>
-        <span>Modo Presentación</span>
-      </button>
-
-      <button class="header-btn primary" id="btn-export-pdf" title="Exportar Ficha Ejecutiva Territorial en PDF">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
-        </svg>
-        <span>Exportar Ficha PDF</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- 2. GLOBAL FILTERS TOOLBAR -->
-  <nav class="filter-toolbar" aria-label="Filtros de navegación territorial">
-    <div class="filter-group">
-      <div class="filter-item">
-        <label class="filter-label" for="filter-subregion">Subregión:</label>
-        <select id="filter-subregion" class="filter-select">
-          <option value="ALL">Todas las Subregiones</option>
-        </select>
-      </div>
-
-      <div class="filter-item">
-        <label class="filter-label" for="filter-municipio">Municipio:</label>
-        <select id="filter-municipio" class="filter-select">
-          <option value="ALL">Todos los Municipios</option>
-        </select>
-      </div>
-
-      <div class="filter-item">
-        <label class="filter-label" for="filter-circuito">Circuito:</label>
-        <select id="filter-circuito" class="filter-select" style="max-width: 260px;">
-          <option value="ALL">Todos los Circuitos</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="search-wrapper">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" id="global-search" class="filter-input search-input" placeholder="Buscar municipio, circuito o subregión..." aria-label="Búsqueda global">
-      </div>
-
-      <button id="btn-clear-filters" class="btn-clear-filters" title="Restablecer todos los filtros">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="1 4 1 10 7 10"></polyline>
-          <polyline points="23 20 23 14 17 14"></polyline>
-          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-        </svg>
-        <span>Limpiar</span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- 3. QUICK SUBREGION PILLS -->
-  <div class="subregion-pills-bar" id="subregion-pills-container">
-    <!-- Rendered dynamically by JS -->
-  </div>
-
-  <!-- 4. KPIS BANNER -->
-  <section class="kpi-section" aria-label="Indicadores clave de desempeño">
-    <div class="kpi-grid">
-      
-      <!-- KPI 1 -->
-      <div class="kpi-card kpi-highlight">
-        <div class="kpi-card-header">
-          <span class="kpi-title">KM de Intervención</span>
-          <div class="kpi-icon-wrapper">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-              <line x1="4" y1="22" x2="4" y2="15"></line>
-            </svg>
+        <div class="hero-meta">
+          <div class="meta-pill">
+            <i class="fas fa-calendar-check" style="color: var(--brand-green-light);"></i>
+            <span>Corte: <strong>25/09/2026</strong></span>
+          </div>
+          <div class="meta-pill">
+            <i class="fas fa-clock" style="color: var(--brand-gold);"></i>
+            <span>Plazo Transcurrido: <strong>38,1% (123 de 323 días)</strong></span>
+          </div>
+          <div class="meta-pill">
+            <i class="fas fa-map-marked-alt" style="color: var(--info-blue);"></i>
+            <span>Alcance: <strong>634,43 km en 8 Lotes</strong></span>
           </div>
         </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kpi-km-value">634.43</span>
-          <span class="kpi-unit">km</span>
-        </div>
-        <div class="kpi-subtext">
-          <span class="badge-pill">Meta Total</span>
-          <span>Red secundaria</span>
-        </div>
       </div>
+    </section>
 
-      <!-- KPI 2 -->
+    <!-- KPI Summary Strip -->
+    <section class="kpi-strip">
       <div class="kpi-card">
-        <div class="kpi-card-header">
-          <span class="kpi-title">Circuitos Viales</span>
-          <div class="kpi-icon-wrapper">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-          </div>
+        <div class="kpi-header">
+          <span class="kpi-label">Valor Total Contratos</span>
+          <i class="fas fa-file-invoice-dollar kpi-icon"></i>
         </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kpi-circuitos-value">29</span>
-          <span class="kpi-unit">corredores</span>
+        <div class="kpi-value" id="kpiTotalContratos">$ 690.571 M</div>
+        <div class="kpi-sub">
+          <span>Obra: <strong id="kpiValorObra">$ 628.936 M</strong></span>
         </div>
-        <div class="kpi-subtext">Priorizados para estabilización</div>
       </div>
 
-      <!-- KPI 3 -->
+      <div class="kpi-card info">
+        <div class="kpi-header">
+          <span class="kpi-label">Valor Proyectado Ajustado</span>
+          <i class="fas fa-chart-line kpi-icon"></i>
+        </div>
+        <div class="kpi-value" id="kpiValorProyectado">$ 992.444 M</div>
+        <div class="kpi-sub">
+          <span>Costo prom: <strong>$ 1.564 M / km</strong></span>
+        </div>
+      </div>
+
+      <div class="kpi-card alert">
+        <div class="kpi-header">
+          <span class="kpi-label">Adición Requerida</span>
+          <i class="fas fa-triangle-exclamation kpi-icon"></i>
+        </div>
+        <div class="kpi-value" style="color: var(--alert-red);" id="kpiValorAdicion">▲ $ 363.509 M</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge danger">+57,8% sobre contractual</span>
+        </div>
+      </div>
+
       <div class="kpi-card">
-        <div class="kpi-card-header">
-          <span class="kpi-title">Subregiones</span>
-          <div class="kpi-icon-wrapper">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-              <line x1="8" y1="2" x2="8" y2="18"></line>
-              <line x1="16" y1="6" x2="16" y2="22"></line>
-            </svg>
-          </div>
+        <div class="kpi-header">
+          <span class="kpi-label">Longitud Contratada</span>
+          <i class="fas fa-route kpi-icon"></i>
         </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kpi-subregiones-value">8</span>
-          <span class="kpi-unit">de 9</span>
+        <div class="kpi-value" id="kpiKmContratados">634,43 km</div>
+        <div class="kpi-sub">
+          <span>Total en <strong>29 corredores</strong></span>
         </div>
-        <div class="kpi-subtext">Cobertura subregional activa</div>
       </div>
 
-      <!-- KPI 4 -->
-      <div class="kpi-card">
-        <div class="kpi-card-header">
-          <span class="kpi-title">Municipios Conectados</span>
-          <div class="kpi-icon-wrapper">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-          </div>
+      <div class="kpi-card warning">
+        <div class="kpi-header">
+          <span class="kpi-label">Km que se alcanzan</span>
+          <i class="fas fa-road-circle-check kpi-icon"></i>
         </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kpi-municipios-value">64</span>
-          <span class="kpi-unit">municipios</span>
+        <div class="kpi-value" style="color: #34d399;" id="kpiKmAlcanzan">409,07 km</div>
+        <div class="kpi-sub">
+          <span class="kpi-badge success" id="kpiCoberturaPct">64,5% cobertura</span>
+          <span style="margin-left: 6px;">Pendiente: <strong id="kpiKmPendientes" style="color: var(--alert-red);">225,36 km</strong></span>
         </div>
-        <div class="kpi-subtext">Con intervención vial directa</div>
       </div>
+    </section>
 
-      <!-- KPI 5 -->
-      <div class="kpi-card">
-        <div class="kpi-card-header">
-          <span class="kpi-title">Cobertura Municipal</span>
-          <div class="kpi-icon-wrapper">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-              <path d="M2 12h20"></path>
-            </svg>
+    <!-- Main Workspace Container -->
+    <main class="main-workspace">
+
+      <!-- Interactive Filter Controls Bar -->
+      <section class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-filter"></i> Filtrar por Lote:</span>
+          <select id="selectLoteFilter" class="select-control" aria-label="Filtrar por lote">
+            <!-- Populated dynamically -->
+          </select>
+
+          <!-- Quick Lote Pills -->
+          <div class="lote-pill-filters" id="lotePillsContainer">
+            <!-- Populated dynamically -->
           </div>
         </div>
-        <div class="kpi-value-row">
-          <span class="kpi-value" id="kpi-cobertura-value">51.2%</span>
-          <span class="kpi-unit">del territorio</span>
+
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-search"></i> Corredor:</span>
+          <select id="selectCorridorFilter" class="select-control" style="min-width: 280px;" aria-label="Seleccionar corredor">
+            <!-- Populated dynamically -->
+          </select>
         </div>
-        <div class="kpi-subtext">Alcance territorial directo</div>
+      </section>
+
+      <!-- VIEW PANE 1: RESUMEN GENERAL (DEPARTAMENTAL) -->
+      <section id="pane-resumen" class="view-pane active">
+        <div class="overview-grid">
+          
+          <!-- GIS Leaflet Map Card -->
+          <div class="map-card">
+            <div class="map-card-header">
+              <div class="map-card-title">
+                <i class="fas fa-map-location-dot" style="color: var(--brand-green-light);"></i>
+                Geolocalización de Corredores de Estabilización en Antioquia
+              </div>
+              <div class="map-actions">
+                <select id="mapBaseSelector" class="select-control" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                  <option value="light" selected>Mapa Claro (Antioquia)</option>
+                  <option value="satellite">Satélite Esri</option>
+                  <option value="dark">Mapa Oscuro</option>
+                </select>
+                <button id="resetMapBtn" class="btn-icon" style="width: 30px; height: 30px;" title="Centrar Antioquia">
+                  <i class="fas fa-crosshairs"></i>
+                </button>
+              </div>
+            </div>
+            <div id="mapContainer" class="map-container"></div>
+            <div style="background: var(--bg-secondary); padding: 0.6rem 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted);">
+              <span><i class="fas fa-circle-info"></i> Haz clic sobre cualquier corredor para abrir su informe detallado.</span>
+              <span>125 Municipios · 29 Corredores GIS</span>
+            </div>
+          </div>
+
+          <!-- Corridors Data Table Card -->
+          <div class="table-card">
+            <div class="map-card-header">
+              <div class="map-card-title">
+                <i class="fas fa-list-check" style="color: var(--brand-gold);"></i>
+                Listado Maestro de Corredores
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);" id="tableCountBadge">29 Corredores</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Corredor</th>
+                    <th>Km Cont.</th>
+                    <th>Km Prob.</th>
+                    <th>Cob.</th>
+                    <th>Contrato</th>
+                    <th>Adición</th>
+                    <th>Av. Fís.</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="corridorsTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Charts Row: Financial & Physical Overview -->
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+          <div class="table-card" style="padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div>
+                <span style="font-size: 0.7rem; font-weight: 700; color: var(--brand-green-light); text-transform: uppercase;">
+                  Variación Económica
+                </span>
+                <h4 style="font-size: 1rem; font-weight: 800; color: var(--text-primary);">
+                  Presupuesto Contractual vs Proyectado vs Adición Requerida por Lote
+                </h4>
+              </div>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Cifras en Millones (M)</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="lotesBudgetChart"></canvas>
+            </div>
+          </div>
+
+          <div class="table-card" style="padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div>
+                <span style="font-size: 0.7rem; font-weight: 700; color: var(--brand-gold); text-transform: uppercase;">
+                  Alcance Físico
+                </span>
+                <h4 style="font-size: 1rem; font-weight: 800; color: var(--text-primary);">
+                  Kilómetros que se Alcanzan vs Km Pendientes
+                </h4>
+              </div>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Total: 634,43 km</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="lotesKmChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW PANE 2: DETALLE POR CORREDOR (ESTRUCTURA & ABSCISAS) -->
+      <section id="pane-detalle" class="view-pane">
+        
+        <!-- Corridor Header Card -->
+        <div class="corridor-header-card">
+          <div class="corridor-identity">
+            <div class="corridor-badge-big" id="detailCodeBadge">E-18</div>
+            <div class="corridor-title-text">
+              <h2 id="detailCorridorTitle">Abejorral – Santa Bárbara – El Cairo – La Elvira</h2>
+              <div class="corridor-tags">
+                <span class="tag-badge" id="detailSubregionBadge">Oriente</span>
+                <span class="tag-badge" id="detailLoteBadge">Lote 1 – Subregión Oriente</span>
+                <span class="tag-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">En Ejecución</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Corridor Mini KPIs -->
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 8px 14px; border-radius: var(--radius-sm); text-align: center;">
+              <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Long. Contractual:</span>
+              <strong style="font-size: 1.05rem;" id="detailKmContractual">23,77 km</strong>
+            </div>
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 8px 14px; border-radius: var(--radius-sm); text-align: center;">
+              <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Long. Probable:</span>
+              <strong style="font-size: 1.05rem; color: #34d399;" id="detailKmProbable">9,72 km</strong>
+            </div>
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 8px 14px; border-radius: var(--radius-sm); text-align: center;">
+              <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Adición Requerida:</span>
+              <strong style="font-size: 1.05rem; color: var(--alert-red);" id="detailAdicion">▲ $ 28.861 M</strong>
+            </div>
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 8px 14px; border-radius: var(--radius-sm); text-align: center;">
+              <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Avance Físico:</span>
+              <strong style="font-size: 1.05rem; color: #10b981;" id="detailAvanceFisico">2,58%</strong>
+            </div>
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 8px 14px; border-radius: var(--radius-sm); text-align: center;">
+              <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Plazo Transcurrido:</span>
+              <strong style="font-size: 1.05rem; color: var(--brand-gold);" id="detailPlazoTranscurrido">38,1%</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contractual & Administrative Identity Bar with Timeline -->
+        <div class="contract-admin-card" id="contractAdminCard">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.72rem; font-weight: 800; color: var(--brand-green); text-transform: uppercase; background: var(--success-green-bg); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(4, 120, 87, 0.2);">
+                <i class="fas fa-file-contract"></i> Información Contractual & Línea de Tiempo
+              </span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Secretaría de Infraestructura Física · Rentan</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span class="tag-badge" style="background: rgba(4, 120, 87, 0.12); color: var(--brand-green); font-weight: 700;">
+                <i class="fas fa-clock"></i> Plazo: <strong id="contractPlazo">13 Meses</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Metadata 4-Column Grid -->
+          <div class="contract-meta-grid">
+            <div class="contract-meta-item">
+              <span class="meta-label"><i class="fas fa-hashtag" style="color: var(--brand-green);"></i> Contrato de Obra No.</span>
+              <div class="meta-value" id="contractNo">20260202</div>
+            </div>
+            <div class="contract-meta-item">
+              <span class="meta-label"><i class="fas fa-building" style="color: var(--brand-green);"></i> Contratista de Obra</span>
+              <div class="meta-value" id="contractorName" style="font-size: 0.85rem;">CONSORCIO ANTIOQUIA ORIENTE</div>
+            </div>
+            <div class="contract-meta-item">
+              <span class="meta-label"><i class="fas fa-shield-halved" style="color: var(--brand-gold);"></i> Contrato Interventoría No.</span>
+              <div class="meta-value" id="interventoriaNo">20260210</div>
+            </div>
+            <div class="contract-meta-item">
+              <span class="meta-label"><i class="fas fa-user-check" style="color: var(--brand-gold);"></i> Interventor Responsable</span>
+              <div class="meta-value" id="interventorName" style="font-size: 0.82rem;">CAMILO ANDRÉS ÁNGEL SALDARRIAGA</div>
+            </div>
+          </div>
+
+          <!-- Objeto Contractual Box -->
+          <div class="contract-objeto-box">
+            <strong style="color: var(--text-primary); display: block; margin-bottom: 2px;">
+              <i class="fas fa-bullseye" style="color: var(--brand-green); margin-right: 4px;"></i> Objeto del Contrato:
+            </strong>
+            <span id="contractObjeto">
+              Actividades de mejoramiento, mantenimiento y obras complementarias para la estabilización de las vías a cargo del Departamento de Antioquia - Grupo 2 Subregión Oriente.
+            </span>
+          </div>
+
+          <!-- Contractual Timeline Track -->
+          <div class="contract-timeline-card">
+            <div class="timeline-milestones">
+              <span><i class="fas fa-flag-checkered"></i> Acta Inicio: <strong id="timelineInicio">01/06/2026</strong></span>
+              <span><i class="fas fa-road"></i> Inicio Estabilización: <strong id="timelineEstabilizacion">26/08/2026</strong></span>
+              <span><i class="fas fa-calendar-check"></i> Fecha de Corte: <strong id="timelineCorte">24/09/2026</strong></span>
+              <span><i class="fas fa-hourglass-end"></i> Vencimiento: <strong id="timelineVencimiento">20/04/2027</strong></span>
+            </div>
+            <div class="timeline-track">
+              <div class="timeline-fill" id="timelineProgressBar" style="width: 38.1%;"></div>
+            </div>
+            <div class="timeline-badges">
+              <span style="color: var(--brand-green); font-weight: 700;">
+                <i class="fas fa-circle-check"></i> Transcurrido: <strong id="timelineTranscurrido">123 de 323 días (38,1%)</strong>
+              </span>
+              <span style="color: var(--brand-gold); font-weight: 700;">
+                <i class="fas fa-clock"></i> Faltante: <strong id="timelineFaltante">200 días (61,9%)</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Execution Contrasts & Projections Studio (Control Semanal y Curva S) -->
+        <div class="weekly-tracking-card" id="weeklyTrackingContainer">
+          <!-- Populated dynamically by WeeklyProgressManager -->
+        </div>
+
+        <!-- Full-Width Abscissas Chainage Progression Studio -->
+        <div class="abscissas-card" id="abscissasContainer">
+          <!-- Populated dynamically by AbscissasManager -->
+        </div>
+
+        <!-- Full-Width 3D Isometric Pavement Stratigraphy Studio -->
+        <div class="pavement-card isometric-showcase-card" id="pavementVisualizerContainer" style="margin-bottom: 1.5rem;">
+          <!-- Populated dynamically by PavementVisualizer -->
+        </div>
+
+        <!-- Activity Budget Comparison & Chart Module (Full Width) -->
+        <div class="pavement-card" id="activitiesBudgetCard" style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+              <span style="font-size: 0.72rem; font-weight: 700; color: var(--brand-gold); text-transform: uppercase;">
+                Variación por Grupo de Actividad
+              </span>
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-top: 2px;">
+                Balance Contractual vs Proyectado
+              </h3>
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Presupuesto y Variación de Cantidades</span>
+          </div>
+
+          <div class="budget-comparison-split" style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.5rem; align-items: center;">
+            <!-- Activity Chart -->
+            <div style="height: 220px; position: relative;">
+              <canvas id="corridorActivitiesChart"></canvas>
+            </div>
+
+            <!-- Activity Table -->
+            <div class="table-responsive" style="max-height: 240px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Actividad</th>
+                    <th>Valor Cont.</th>
+                    <th>%</th>
+                    <th>Valor Proy.</th>
+                    <th>%</th>
+                    <th>Variación</th>
+                    <th>% Var.</th>
+                  </tr>
+                </thead>
+                <tbody id="activitiesTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photographic Registry Section -->
+        <div class="photo-gallery-card" id="photoGalleryContainer">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2px;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: var(--brand-green); text-transform: uppercase; background: var(--success-green-bg); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(4, 120, 87, 0.2);">
+                  <i class="fas fa-camera"></i> Evidencia en Campo
+                </span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);" id="photoGalleryCountBadge">8 Fotografías Georreferenciadas</span>
+              </div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">
+                Registro Fotográfico de Frentes de Obra y Control de Interventoría
+              </h3>
+            </div>
+            <div style="display: flex; gap: 0.4rem; align-items: center; font-size: 0.75rem; color: var(--text-muted);">
+              <span><i class="fas fa-circle-info"></i> Haz clic sobre cualquier imagen para ampliar en alta definición con ficha técnica.</span>
+            </div>
+          </div>
+
+          <!-- Photo Filter Pills Bar -->
+          <div class="component-filter-bar" id="photoFilterPills">
+            <button class="comp-pill-btn active" data-pfilter="all">
+              <i class="fas fa-images"></i> Todas las Fotos
+            </button>
+            <button class="comp-pill-btn" data-pfilter="topografia">
+              <i class="fas fa-drafting-compass" style="color: #059669;"></i> Topografía
+            </button>
+            <button class="comp-pill-btn" data-pfilter="alcantarilla">
+              <i class="fas fa-circle-dot" style="color: #0284c7;"></i> Obras de Arte & Alcantarillas
+            </button>
+            <button class="comp-pill-btn" data-pfilter="filtro">
+              <i class="fas fa-filter" style="color: #2563eb;"></i> Filtros Drenantes
+            </button>
+            <button class="comp-pill-btn" data-pfilter="subrasante">
+              <i class="fas fa-mountain" style="color: #92400e;"></i> Plataforma & Cal
+            </button>
+            <button class="comp-pill-btn" data-pfilter="cemento">
+              <i class="fas fa-cubes" style="color: #d97706;"></i> Cemento MGTC
+            </button>
+          </div>
+
+          <!-- Photo Cards Grid -->
+          <div class="photo-grid" id="photoGalleryGrid">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- VIEW PANE 3: MATRIZ DE PAVIMENTOS & GEOTECNIA -->
+      <section id="pane-matriz" class="view-pane">
+        <div class="table-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div>
+              <span style="font-size: 0.75rem; font-weight: 700; color: var(--brand-green-light); text-transform: uppercase;">
+                Ingeniería de Pavimentos Departamental
+              </span>
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin-top: 2px;">
+                Tipologías de Estabilización y Comportamiento Geotécnico
+              </h3>
+            </div>
+            <span class="meta-pill"><i class="fas fa-microscope"></i> Especificaciones Invías 2026</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+            El Programa de Estabilización de Vías de Antioquia implementa soluciones geotécnicas adaptadas a la topografía de cordillera andina, microclimas y diversidad de suelos (desde cenizas volcánicas en el Oriente hasta arcillas aluviales en Urabá y Bajo Cauca).
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            <!-- Tipología 1 -->
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(17, 24, 39, 0.8); border: 2px solid #f59e0b; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 1.1rem;">
+                  <i class="fas fa-road"></i>
+                </div>
+                <div>
+                  <h4 style="font-weight: 800; font-size: 0.95rem;">MDC-19 (Alta Pendiente > 8%)</h4>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">Invías Art. 450 · Espesor 7,5 - 9,0 cm</span>
+                </div>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                Utilizada en corredores de alta montaña como Miserenga–Ebéjico y sectores escarpados de Abejorral para soportar el torque y tracción de vehículos de carga pesada sin desprendimientos.
+              </p>
+              <div style="font-size: 0.75rem; color: #34d399; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> Gran estabilidad y resistencia al ahuellamiento.
+              </div>
+            </div>
+
+            <!-- Tipología 2 -->
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(217, 119, 6, 0.2); border: 2px solid #d97706; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.1rem;">
+                  <i class="fas fa-cubes"></i>
+                </div>
+                <div>
+                  <h4 style="font-weight: 800; font-size: 0.95rem;">MGTC / BGTC (Suelo-Cemento)</h4>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">Invías Art. 330 · Espesor 20 - 39 cm</span>
+                </div>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                Mezclado in-situ con recicladoras de pavimento (Wirtgen/Bomag) y cemento Portland al 3.0% – 5.0%. Proporciona una base semirrígida de alta capacidad portante y puente estructural.
+              </p>
+              <div style="font-size: 0.75rem; color: #34d399; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> Distribución homogénea de esfuerzos axiales.
+              </div>
+            </div>
+
+            <!-- Tipología 3 -->
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(146, 64, 14, 0.2); border: 2px solid #92400e; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.1rem;">
+                  <i class="fas fa-mountain"></i>
+                </div>
+                <div>
+                  <h4 style="font-weight: 800; font-size: 0.95rem;">Subrasante con Cal</h4>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">Invías Art. 320 · Espesor 20 - 25 cm</span>
+                </div>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                Tratamiento químico para modificar arcillas de alta plasticidad (CH/MH). Reduce el índice de plasticidad y anula el potencial de hinchamiento, elevando el CBR de 1.5% a más de 15%.
+              </p>
+              <div style="font-size: 0.75rem; color: #34d399; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> Mitigación total de deformaciones volumétricas.
+              </div>
+            </div>
+
+            <!-- Tipología 4 -->
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(37, 99, 235, 0.2); border: 2px solid #2563eb; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.1rem;">
+                  <i class="fas fa-grip-lines"></i>
+                </div>
+                <div>
+                  <h4 style="font-weight: 800; font-size: 0.95rem;">TSD (Tratamiento Superficial)</h4>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">Invías Art. 440 · Doble Riego</span>
+                </div>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                Capa de rodadura económica y duradera para pendientes moderadas. Protege la base de la infiltración de agua superficial y provee una textura antideslizante con gravilla triturada.
+              </p>
+              <div style="font-size: 0.75rem; color: #34d399; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> Excelente costo-eficiencia y sello hidráulico.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW PANE 4: COMPARATIVA DE LOTES (8 LOTES CONSOLIDADOS) -->
+      <section id="pane-comparativa" class="view-pane">
+        
+        <!-- Table Card of 8 Lotes -->
+        <div class="table-card" style="margin-bottom: 1.5rem;">
+          <div class="map-card-header">
+            <div class="map-card-title">
+              <i class="fas fa-table-list" style="color: var(--brand-green-light);"></i>
+              Consolidado General de Variación de Alcances por Lote (Slide 52 Oficial)
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">8 Lotes · 634,43 km</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Lote / Subregión</th>
+                  <th>Corredores</th>
+                  <th>Km Contratados</th>
+                  <th>Km que se alcanzan</th>
+                  <th>Km Pendientes</th>
+                  <th>Cobertura</th>
+                  <th>Valor Contrato Obra</th>
+                  <th>Valor Proyectado</th>
+                  <th>$/km Proyectado</th>
+                  <th>Adición Requerida</th>
+                  <th>% Variación</th>
+                </tr>
+              </thead>
+              <tbody id="lotesMatrixBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Comparative Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;" id="lotesComparisonGrid">
+          <!-- Populated dynamically -->
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div>
+        <strong>Programa de Estabilización de Vías de Antioquia</strong> · Informe Departamental de Variación de Alcances y Estado de Ejecución
       </div>
-
-    </div>
-  </section>
-
-  <!-- 5. MAIN WORKSPACE (MAP 58% + ANALYTICS 42%) -->
-  <main class="main-dashboard-grid">
-    
-    <!-- LEFT PANEL: MAPA DE ANTIOQUIA (PRIMARY VISUAL WEIGHT) -->
-    <div class="panel-card map-panel">
-      <div class="panel-header">
-        <div class="panel-title-wrapper">
-          <div class="panel-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-            </svg>
+      <div class="footer-credits">
+        <span>Gobernación de Antioquia · República de Colombia</span>
+      </div>
+    <!-- Lightbox Modal for Photo Registry -->
+    <div class="lightbox-modal" id="photoLightboxModal">
+      <div class="lightbox-content">
+        <div class="lightbox-header">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span class="tag-badge" id="modalPhotoAbscissa" style="background: var(--brand-green); color: #fff; font-family: var(--font-mono); font-weight: 800; font-size: 0.82rem;">PR 24+940</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);" id="modalPhotoCategory">Topografía</span>
           </div>
-          <div>
-            <h2 class="panel-title">Geovisor Territorial de Antioquia</h2>
-            <div class="panel-subtitle">Visualización espacial interactiva de municipios y red vial secundaria</div>
-          </div>
-        </div>
-
-        <div class="panel-actions">
-          <button id="btn-reset-map-view" class="header-btn" style="color: #0f172a; border-color: #cbd5e1;" title="Restablecer vista de Antioquia">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-              <path d="M3 3v5h5"></path>
-            </svg>
-            <span>Centrar</span>
+          <button id="closePhotoModalBtn" class="btn-icon" style="width: 32px; height: 32px;" title="Cerrar (Esc)">
+            <i class="fas fa-times"></i>
           </button>
         </div>
-      </div>
-
-      <div class="map-viewport-container">
-        <!-- Leaflet Map Canvas -->
-        <div id="leaflet-map"></div>
-
-        <!-- View Mode Switcher -->
-        <div class="map-view-switcher">
-          <button class="view-mode-btn active" data-mode="general">General</button>
-          <button class="view-mode-btn" data-mode="subregional">Subregional</button>
-          <button class="view-mode-btn" data-mode="vial">Red Vial</button>
-          <button class="view-mode-btn" data-mode="intervencion">Intervenciones</button>
-        </div>
-
-        <!-- Floating Layer Control -->
-        <div class="map-floating-overlay">
-          <div class="map-control-card">
-            <div class="map-control-header">
-              <span>Capas Activas</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-              </svg>
-            </div>
-            <div class="layer-toggle-list">
-              <label class="layer-toggle-item">
-                <input type="checkbox" class="layer-checkbox" data-layer="municipios" checked>
-                <span class="layer-legend-bullet bullet-municipios"></span>
-                <span>Municipios (125)</span>
-              </label>
-
-              <label class="layer-toggle-item">
-                <input type="checkbox" class="layer-checkbox" data-layer="secundaria" checked>
-                <span class="layer-legend-bullet bullet-secundaria"></span>
-                <span>Red Secundaria</span>
-              </label>
-
-              <label class="layer-toggle-item">
-                <input type="checkbox" class="layer-checkbox" data-layer="intervenciones" checked>
-                <span class="layer-legend-bullet bullet-prioritarias"></span>
-                <span>Estabilización (634 km)</span>
-              </label>
-
-              <label class="layer-toggle-item">
-                <input type="checkbox" class="layer-checkbox" data-layer="circuitos" checked>
-                <span class="layer-legend-bullet bullet-circuitos"></span>
-                <span>Circuitos (1-29)</span>
-              </label>
+        <div class="lightbox-body">
+          <div style="display: flex; align-items: center; justify-content: center; background: #000; border-radius: var(--radius-md); overflow: hidden;">
+            <img id="modalPhotoImg" src="" alt="Registro Fotográfico de Obra" class="lightbox-img" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.85rem; justify-content: center;">
+            <h3 id="modalPhotoTitle" style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); line-height: 1.35;">Título de la Fotografía</h3>
+            <p id="modalPhotoDesc" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">Descripción de las actividades técnicas...</p>
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; font-size: 0.78rem; display: flex; flex-direction: column; gap: 0.45rem;">
+              <div><span style="color: var(--text-muted); font-weight: 600;">Fecha y Hora:</span> <strong id="modalPhotoDate">23 sept 2026</strong></div>
+              <div><span style="color: var(--text-muted); font-weight: 600;">Coordenadas GPS:</span> <strong id="modalPhotoCoords">5.812645°N, 75.420453°W</strong></div>
+              <div><span style="color: var(--text-muted); font-weight: 600;">Control Técnico:</span> <strong id="modalPhotoInterventoria">Interventoría No. 20260210 · CAAS / Rentan</strong></div>
+              <div><span style="color: var(--text-muted); font-weight: 600;">Tipo de Fuente:</span> <strong id="modalPhotoFuente" style="color: var(--brand-green);">Registro Oficial de Obra</strong></div>
             </div>
           </div>
         </div>
-
-        <!-- Active Territory Status Tag -->
-        <div class="map-status-bar">
-          <span class="map-status-dot"></span>
-          <span id="map-active-status">Cargando territorio...</span>
-        </div>
       </div>
     </div>
 
-    <!-- RIGHT PANEL: ANALYTICS, CHARTS & RANKINGS -->
-    <div class="analytics-column">
-      
-      <!-- Chart 1: Km por Subregión -->
-      <div class="panel-card chart-card-compact">
-        <div class="panel-header">
-          <div class="panel-title-wrapper">
-            <div class="panel-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="20" x2="18" y2="10"></line>
-                <line x1="12" y1="20" x2="12" y2="4"></line>
-                <line x1="6" y1="20" x2="6" y2="14"></line>
-              </svg>
-            </div>
-            <h3 class="panel-title">Intervención por Subregión</h3>
-          </div>
-          <span style="font-size: 0.7rem; color: #64748b;">(Clic para filtrar)</span>
-        </div>
-        <div class="chart-body" id="subregion-bar-chart-container">
-          <!-- Dynamic Horizontal Bars -->
-        </div>
-      </div>
-
-      <!-- Chart 2: Distribución Territorial & Gauge -->
-      <div class="panel-card chart-card-compact">
-        <div class="panel-header">
-          <div class="panel-title-wrapper">
-            <div class="panel-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M12 2a10 10 0 0 1 10 10"></path>
-              </svg>
-            </div>
-            <h3 class="panel-title">Distribución & Alcance Territorial</h3>
-          </div>
-        </div>
-        <div class="chart-body">
-          <div id="coverage-gauge-container"></div>
-          <div style="height: 160px; position: relative;">
-            <canvas id="donut-distribution-canvas"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chart 3: Top Corredores Ranking -->
-      <div class="panel-card chart-card-compact">
-        <div class="panel-header">
-          <div class="panel-title-wrapper">
-            <div class="panel-icon" style="color: #d4af37;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
-            </div>
-            <h3 class="panel-title">Principales Corredores por Longitud</h3>
-          </div>
-          <span style="font-size: 0.7rem; color: #64748b;">Top 8</span>
-        </div>
-        <div class="chart-body" id="ranking-circuits-container">
-          <!-- Dynamic Ranking List -->
-        </div>
-      </div>
-
-    </div>
-
-  </main>
-
-  <!-- 6. BOTTOM FULL SECTION: SUBREGIONS GALLERY & CIRCUITS TABLE -->
-  <section class="bottom-section" aria-label="Detalle de subregiones y circuitos">
-    
-    <!-- Subregions Cards Grid -->
-    <div class="panel-card">
-      <div class="panel-header">
-        <div class="panel-title-wrapper">
-          <div class="panel-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </div>
-          <h3 class="panel-title">Panorama Territorial por Subregiones</h3>
-        </div>
-      </div>
-      <div style="padding: 14px;" id="subregion-cards-container">
-        <!-- Rendered Subregion Cards -->
-      </div>
-    </div>
-
-    <!-- Detailed Circuits Table -->
-    <div class="panel-card table-card">
-      <div class="panel-header">
-        <div class="panel-title-wrapper">
-          <div class="panel-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
-            </svg>
-          </div>
-          <h3 class="panel-title">Listado Maestro de Corredores y Circuitos Priorizados</h3>
-        </div>
-      </div>
-
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Nombre del Circuito</th>
-              <th>Subregión</th>
-              <th>Km a Intervenir</th>
-              <th>Estado</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="circuits-table-body">
-            <!-- Dynamic rows -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-footer" id="table-pagination-footer">
-        <!-- Pagination controls -->
-      </div>
-    </div>
-
-  </section>
-
-  <!-- 7. LATERAL DETAIL DRAWER (SLIDE OVER) -->
-  <div class="drawer-backdrop" id="drawer-backdrop"></div>
-  <aside class="drawer-panel" id="drawer-panel" aria-label="Panel de detalle de circuito">
-    <div class="drawer-header">
-      <div>
-        <div class="drawer-header-tag" id="drawer-code-tag">CIR-01 • SUBREGIÓN</div>
-        <h3 class="drawer-header-title" id="drawer-title">Nombre del Circuito</h3>
-      </div>
-      <button class="btn-drawer-close" id="btn-drawer-close" aria-label="Cerrar panel">✕</button>
-    </div>
-    <div class="drawer-body" id="drawer-body">
-      <!-- Injected by uiController -->
-    </div>
-  </aside>
-
-  <!-- 8. MODAL FOR MUNICIPIO DETAILS -->
-  <div class="gov-modal-backdrop" id="gov-modal-backdrop">
-    <div class="gov-modal-card">
-      <div class="gov-modal-header">
-        <h3 id="modal-title" style="font-size: 1rem; font-weight: 800;">Municipio</h3>
-        <button id="btn-modal-close" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
-      </div>
-      <div class="gov-modal-body" id="modal-body">
-        <!-- Injected dynamically -->
-      </div>
-    </div>
   </div>
 
-</div>
+  <!-- Scripts: Dependencies and Database First -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-<!-- Libraries -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="js/libs/jspdf.umd.min.js"></script>
-<script src="js/libs/jspdf.plugin.autotable.min.js"></script>
+  <!-- Local Database and GeoJSON Data Modules -->
+  <script src="data/municipios_geo.js"></script>
+  <script src="data/corredores_geo.js"></script>
+  <script src="data/estabilizacion_data.js"></script>
 
-<!-- Application Entry Point -->
-<script type="module" src="js/app.js"></script>
+  <!-- PDF Export Engine (jsPDF + autoTable) -->
+  <script src="lib/jspdf.umd.min.js"></script>
+  <script src="lib/jspdf.plugin.autotable.min.js"></script>
 
+  <!-- App Feature Components -->
+  <script src="js/map.js"></script>
+  <script src="js/pavement.js"></script>
+  <script src="js/abscissas.js"></script>
+  <script src="js/weekly.js"></script>
+  <script src="js/pdf_report.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script>
+window.errors = [];
+window.onerror = function(msg, url, line, col, error) {
+  window.errors.push({msg: msg, url: url, line: line, col: col});
+};
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="data/municipios_geo.js"></script>
+<script src="data/corredores_geo.js"></script>
+<script src="data/estabilizacion_data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/pavement.js"></script>
+<script src="js/abscissas.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</head>
+<body>
+<div id="output"></div>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('output').innerText = JSON.stringify(window.errors);
+});
+</script>
+</body>
+</html>
