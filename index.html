@@ -169,28 +169,70 @@
       <section id="pane-resumen" class="view-pane active">
         <div class="overview-grid">
           
-          <!-- GIS Leaflet Map Card -->
-          <div class="map-card">
-            <div class="map-card-header">
-              <div class="map-card-title">
-                <i class="fas fa-map-location-dot" style="color: var(--brand-green-light);"></i>
-                Geolocalización de Corredores de Estabilización en Antioquia
+          <!-- GEOVISOR TERRITORIAL DE ANTIOQUIA -->
+          <div class="map-card geovisor-card">
+            <div class="geovisor-header">
+              <div class="geovisor-header-left">
+                <div class="geovisor-icon-wrap">
+                  <i class="fas fa-compass"></i>
+                </div>
+                <div class="geovisor-title-box">
+                  <h2 class="geovisor-title">Geovisor Territorial de Antioquia</h2>
+                  <p class="geovisor-subtitle">Visualización espacial interactiva de municipios y red vial secundaria</p>
+                </div>
               </div>
-              <div class="map-actions">
-                <select id="mapBaseSelector" class="select-control" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-                  <option value="light" selected>Mapa Claro (Antioquia)</option>
-                  <option value="satellite">Satélite Esri</option>
-                  <option value="dark">Mapa Oscuro</option>
-                </select>
-                <button id="resetMapBtn" class="btn-icon" style="width: 30px; height: 30px;" title="Centrar Antioquia">
-                  <i class="fas fa-crosshairs"></i>
+              <div class="geovisor-header-right">
+                <button id="resetMapBtn" class="btn-geovisor-centrar" title="Centrar Antioquia">
+                  <i class="fas fa-rotate-left"></i> Centrar
                 </button>
               </div>
             </div>
-            <div id="mapContainer" class="map-container"></div>
-            <div style="background: var(--bg-secondary); padding: 0.6rem 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted);">
-              <span><i class="fas fa-circle-info"></i> Haz clic sobre cualquier corredor para abrir su informe detallado.</span>
-              <span>125 Municipios · 29 Corredores GIS</span>
+
+            <div class="geovisor-viewport-wrapper">
+              <!-- Filter View Pills on Map (General, Subregional, Red Vial, Intervenciones) -->
+              <div class="geovisor-view-pills" id="geovisorPills">
+                <button class="geovisor-pill active" data-view="general">General</button>
+                <button class="geovisor-pill" data-view="subregional">Subregional</button>
+                <button class="geovisor-pill" data-view="red_vial">Red Vial</button>
+                <button class="geovisor-pill" data-view="intervenciones">Intervenciones</button>
+              </div>
+
+              <!-- Floating Active Layers Card (CAPAS ACTIVAS) -->
+              <div class="geovisor-active-layers-card">
+                <div class="geovisor-layers-header">
+                  <span class="geovisor-layers-title">CAPAS ACTIVAS</span>
+                  <i class="fas fa-layer-group geovisor-layers-icon"></i>
+                </div>
+                <div class="geovisor-layer-items">
+                  <label class="geovisor-layer-item">
+                    <input type="checkbox" id="layerToggleMunicipios" checked />
+                    <span class="geovisor-checkbox-custom"></span>
+                    <span class="geovisor-legend-symbol symbol-municipios"></span>
+                    <span class="geovisor-layer-label">Municipios (125)</span>
+                  </label>
+                  <label class="geovisor-layer-item">
+                    <input type="checkbox" id="layerToggleRedSecundaria" checked />
+                    <span class="geovisor-checkbox-custom"></span>
+                    <span class="geovisor-legend-symbol symbol-red-secundaria"></span>
+                    <span class="geovisor-layer-label">Red Secundaria</span>
+                  </label>
+                  <label class="geovisor-layer-item">
+                    <input type="checkbox" id="layerToggleEstabilizacion" checked />
+                    <span class="geovisor-checkbox-custom"></span>
+                    <span class="geovisor-legend-symbol symbol-estabilizacion"></span>
+                    <span class="geovisor-layer-label">Estabilización (634 km)</span>
+                  </label>
+                  <label class="geovisor-layer-item">
+                    <input type="checkbox" id="layerToggleCircuitos" checked />
+                    <span class="geovisor-checkbox-custom"></span>
+                    <span class="geovisor-legend-symbol symbol-circuitos"></span>
+                    <span class="geovisor-layer-label">Circuitos (1-29)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Map Container -->
+              <div id="mapContainer" class="map-container geovisor-map-container"></div>
             </div>
           </div>
 

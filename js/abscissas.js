@@ -1,395 +1,341 @@
 /* ==========================================================================
    MULTI-BAND LINEAR STRIP CHART: DIAGRAMA DE BANDAS VIALES SINCRONIZADAS
    Secretaría de Infraestructura Física · Gobernación de Antioquia
-   Visualización Métrica de Obras Puntuales, Drenaje Longitudinal,
-   Paquete Estructural de Pavimento y Trabajos de Campo (Topografía/Apiques)
+   Control Métrico de Obras Puntuales, Drenaje Longitudinal,
+   Estructura de Pavimento, Trabajos de Campo y Señalización
    ========================================================================== */
 
 class AbscissasManager {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this.currentCorridor = null;
-    this.currentKm = 0;
-    this.isSimulating = false;
-    this.simTimer = null;
-    this.simSpeed = 1; // 1x, 2x, 5x
-    this.activeFilter = 'all';
-    this.searchTerm = '';
-    this.activePopover = null;
+    this.currentKm = 13.400; // Default station matching reference mockup (K13+400)
+    this.activeCategory = 'all'; // all, puntual, drenaje, estructura, campo, senalizacion
+    this.activeMode = 'avance'; // avance, cantidades, evidencias
+    this.zoomLevel = 1.0; // 1.0, 1.5, 2.0, 3.0
+    this.panelOpen = true;
+    this.isDragging = false;
   }
 
   render(corridor) {
     this.currentCorridor = corridor;
-    this.stopSimulation();
-    this.currentKm = 0;
-
     if (!this.container) return;
 
     const totalKm = corridor.longitud_contractual_km || 23.77;
-    const puntos = corridor.puntos_singulares || this.getDefaultPuntos(corridor);
-    const avance = corridor.avance_abscisas || {
-      abscisas: ["K0", "K2", "K4", "K6", "K8", "K10", "K12", "K14", "K16", "K18", "K20", "K22", `K${Math.round(totalKm)}`],
-      campo: { topografia_pct: 67.31, apiques_pct: 88.35 },
-      estructura: { rodadura_pct: 0, capa_granular_pct: 0, subrasante_pct: 7.57 },
-      drenaje: { cunetas_pct: 0, filtros_pct: 4.08, alcantarillas_pct: 48.89 }
-    };
+    // Set initial km to K13+400 if fits in totalKm, otherwise proportional
+    if (this.currentKm > totalKm) {
+      this.currentKm = Math.min(13.4, totalKm * 0.56);
+    }
 
-    const culvertsCount = puntos.filter(p => p.categoria === 'alcantarilla' || p.categoria === 'alcantarilla_nueva').length;
+    const puntos = corridor.puntos_singulares || this.getDefaultPuntos(corridor);
+    const culverts = puntos.filter(p => p.categoria === 'alcantarilla' || p.categoria === 'alcantarilla_nueva' || p.categoria === 'anulada');
+    const culvertsCount = culverts.length || 22;
 
     this.container.innerHTML = `
       <div class="strip-chart-card">
         
-        <!-- Header & Simulation Controls -->
-        <div class="strip-chart-header">
-          <div class="strip-title-group">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2px;">
-              <span style="font-size: 0.72rem; font-weight: 800; color: var(--brand-green); text-transform: uppercase; letter-spacing: 0.05em; background: var(--success-green-bg); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(4, 120, 87, 0.2);">
-                <i class="fas fa-layer-group"></i> Diagrama de Bandas Viales Sincronizadas
-              </span>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">Longitud: <strong>${totalKm.toFixed(2)} km</strong></span>
-            </div>
-            <h3>Control Métrico de Progresión por Abscisa y Disciplinas de Obra</h3>
-          </div>
-
-          <!-- Speed & Run Controls -->
-          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 2px;">
-              <button class="sim-speed-btn active" data-speed="1">1x</button>
-              <button class="sim-speed-btn" data-speed="2">2x</button>
-              <button class="sim-speed-btn" data-speed="5">5x</button>
-            </div>
-            <button id="simPlayBtn" class="btn-primary" style="padding: 0.45rem 1rem; font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
-              <i class="fas fa-play"></i> Simular Recorrido
+        <!-- 1. Top Navigation & Controls Toolbar -->
+        <div class="strip-toolbar">
+          <!-- Left: Category Filter Pills -->
+          <div class="strip-category-pills" id="stripCategoryPills">
+            <button class="cat-pill ${this.activeCategory === 'all' ? 'active' : ''}" data-category="all">
+              <i class="fas fa-layer-group"></i> Todas
             </button>
-            <button id="simResetBtn" class="btn-icon" style="width: 34px; height: 34px;" title="Reiniciar a K 0+000">
-              <i class="fas fa-undo"></i>
+            <button class="cat-pill ${this.activeCategory === 'drenaje' ? 'active' : ''}" data-category="drenaje">
+              <i class="fas fa-droplet" style="color: #2563eb;"></i> Drenaje y Obras
+            </button>
+            <button class="cat-pill ${this.activeCategory === 'estructura' ? 'active' : ''}" data-category="estructura">
+              <i class="fas fa-cubes-stacked" style="color: #ea580c;"></i> Estructura Pavimento
+            </button>
+            <button class="cat-pill ${this.activeCategory === 'campo' ? 'active' : ''}" data-category="campo">
+              <i class="fas fa-compass-drafting" style="color: #0d9488;"></i> Campo y Geotecnia
+            </button>
+            <button class="cat-pill ${this.activeCategory === 'senalizacion' ? 'active' : ''}" data-category="senalizacion">
+              <i class="fas fa-triangle-exclamation" style="color: #7c3aed;"></i> Señalización
             </button>
           </div>
+
+          <!-- Right: Zoom, Search, and Mode Switcher -->
+          <div class="strip-right-controls">
+            <!-- Zoom Controls -->
+            <div class="strip-zoom-group">
+              <button class="strip-zoom-btn" id="stripZoomReset" title="Restablecer escala (100%)">
+                <i class="fas fa-magnifying-glass"></i>
+              </button>
+              <button class="strip-zoom-btn" id="stripZoomOut" title="Alejar (-)">
+                <i class="fas fa-minus"></i>
+              </button>
+              <button class="strip-zoom-btn" id="stripZoomIn" title="Acercar (+)">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+
+            <!-- Abscissa Search -->
+            <div class="strip-search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="stripAbscissaSearch" placeholder="Buscar abscisa..." autocomplete="off" />
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="strip-mode-group">
+              <span>Modo:</span>
+              <div class="strip-mode-toggle" id="stripModeToggle">
+                <button class="mode-btn ${this.activeMode === 'avance' ? 'active' : ''}" data-mode="avance">Avance</button>
+                <button class="mode-btn ${this.activeMode === 'cantidades' ? 'active' : ''}" data-mode="cantidades">Cantidades</button>
+                <button class="mode-btn ${this.activeMode === 'evidencias' ? 'active' : ''}" data-mode="evidencias">Evidencias</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Real-Time HUD Station Display -->
-        <div class="strip-hud-panel">
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <div class="strip-odometer-box">
-              <i class="fas fa-map-pin" style="color: #facc15;"></i>
-              <span id="stripOdometerText">K 0 + 000</span>
-            </div>
-            <div>
-              <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Estado en Estación:</div>
-              <strong id="stripStatusText" style="font-size: 0.92rem; color: var(--text-primary); display: block;">
-                Frente Activo: Filtros Granulares (K0+086 a K1+250) y Reposición de Alcantarillas
-              </strong>
-            </div>
-          </div>
+        <!-- 2. Main Split Layout: Bands Board + Station Inspector Sidebar -->
+        <div class="strip-main-split ${this.panelOpen ? '' : 'panel-collapsed'}" id="stripMainSplit">
 
-          <!-- Active Disciplines at Current Station -->
-          <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;" id="stripActiveChips">
-            <!-- Populated dynamically -->
-          </div>
+          <!-- Left / Center: Synchronized Linear Diagram Stage -->
+          <div class="strip-board-stage" id="stripBoardStage">
 
-          <!-- Nearest Work / Drainage Point -->
-          <div style="text-align: right; border-left: 1px solid var(--border-subtle); padding-left: 1.25rem;">
-            <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block;">Punto Singular Próximo:</span>
-            <strong id="stripNearestText" style="font-size: 0.85rem; color: var(--brand-green);">K 0+086 · Inicio Filtro Longitudinal</strong>
-          </div>
-        </div>
-
-        <!-- Filter Pills Bar -->
-        <div class="strip-filter-bar" id="stripFilterBar">
-          <button class="strip-filter-btn active" data-filter="all">
-            <i class="fas fa-bars-staggered"></i> Todas las Bandas
-          </button>
-          <button class="strip-filter-btn" data-filter="banda-puntual">
-            <i class="fas fa-circle-dot" style="color: #0284c7;"></i> Obras Puntuales (${culvertsCount})
-          </button>
-          <button class="strip-filter-btn" data-filter="banda-drenaje">
-            <i class="fas fa-water" style="color: #2563eb;"></i> Drenaje Longitudinal (MI / MD)
-          </button>
-          <button class="strip-filter-btn" data-filter="banda-estructura">
-            <i class="fas fa-cubes" style="color: #d97706;"></i> Paquete Estructural (Pavimento)
-          </button>
-          <button class="strip-filter-btn" data-filter="banda-campo">
-            <i class="fas fa-drafting-compass" style="color: #059669;"></i> Campo (Topografía & Apiques)
-          </button>
-        </div>
-
-        <!-- Master Multi-Band Stage -->
-        <div class="strip-stage" id="stripStage">
-          
-          <!-- Needle Track Overlay (Spans precisely across the central graphic column) -->
-          <div class="needle-track-overlay" id="needleTrackOverlay">
-            <div class="strip-crosshair-needle" id="stripCrosshairNeedle" style="left: 0%;">
-              <div class="crosshair-needle-head"></div>
-              <div class="crosshair-needle-badge" id="needleBadge">K 0+000</div>
-            </div>
-          </div>
-
-          <!-- 0. Main Asphalt Road Ribbon & Active Front -->
-          <div class="strip-road-ribbon" title="Haz clic o arrastra para mover la inspección">
-            <div class="band-meta-bracket bracket-road">
-              <div>
-                <span class="band-bracket-title"><i class="fas fa-road" style="color: var(--brand-green);"></i> Calzada Principal</span>
-                <span class="band-bracket-sub">Eje Vial y Tráfico</span>
+            <!-- Ruler Track Header Row -->
+            <div class="strip-ruler-row">
+              <div class="strip-ruler-meta">
+                <span class="ruler-title-tag">ABSCISA / PROGRESIVA</span>
               </div>
-            </div>
-
-            <div class="road-ribbon-track" id="roadRibbonTrack">
-              <div class="road-ribbon-centerline"></div>
-
-              <!-- Highlighted Active Front Zone (K 0+086 a K 1+250) -->
-              <div class="road-ribbon-active-zone" style="left: ${(0.086 / totalKm) * 100}%; width: ${((1.250 - 0.086) / totalKm) * 100}%;">
-                <span><i class="fas fa-hard-hat"></i> Frente Activo (K 0+086 a K 1+250)</span>
-              </div>
-
-              <!-- Animated Inspection Vehicle -->
-              <div class="road-ribbon-vehicle" id="roadRibbonVehicle" style="left: 0%;">
-                <i class="fas fa-truck-pickup"></i>
-              </div>
-            </div>
-
-            <div class="band-progress-cell">
-              <div class="band-progress-badge" style="font-size: 0.72rem; color: var(--text-muted);">
-                0 – ${totalKm.toFixed(1)} km
-              </div>
-            </div>
-          </div>
-
-          <!-- Continuous Scrubber Range Slider -->
-          <div class="strip-scrubber-track">
-            <div class="band-meta-bracket bracket-scrubber">
-              <div>
-                <span class="band-bracket-title"><i class="fas fa-location-crosshairs" style="color: #dc2626;"></i> Control de Abscisa</span>
-                <span class="band-bracket-sub">Localizador Progresivo</span>
-              </div>
-            </div>
-            <div style="position: relative; width: 100%;">
-              <input type="range" class="scrubber-slider" id="scrubberSlider" min="0" max="${totalKm}" step="0.01" value="0" />
               
-              <!-- Kilometer Scale Ticks -->
-              <div class="strip-scale-ticks">
-                ${(avance.abscisas || []).map((abs, idx, arr) => {
-                  let kmVal = 0;
-                  const clean = abs.replace('K', '').trim();
-                  if (clean.includes('+')) {
-                    const parts = clean.split('+');
-                    kmVal = parseFloat(parts[0]) + (parseFloat(parts[1]) / 1000);
-                  } else {
-                    kmVal = parseFloat(clean);
-                  }
-                  if (isNaN(kmVal)) kmVal = 0;
-                  const leftPct = Math.min(100, Math.max(0, (kmVal / totalKm) * 100));
-                  let transform = 'translateX(-50%)';
-                  if (idx === 0) transform = 'translateX(0)';
-                  if (idx === arr.length - 1) transform = 'translateX(-100%)';
-                  return `
-                    <div class="strip-tick" style="left: ${leftPct.toFixed(2)}%; transform: ${transform};">
-                      <span>${abs}</span>
+              <div class="strip-ruler-scroll-viewport" id="rulerViewport">
+                <div class="strip-ruler-track-wrapper" id="rulerTrackWrapper">
+                  <!-- Dark Forest Green Ruler Bar -->
+                  <div class="strip-forest-ruler" id="forestRuler">
+                    <div class="ruler-ticks-container" id="rulerTicksContainer">
+                      ${this.renderRulerTicks(totalKm)}
                     </div>
-                  `;
-                }).join('')}
+                    <div class="forest-ruler-bar" id="forestRulerBar" title="Haz clic o arrastra para mover el cursor">
+                      <div class="forest-ruler-ticks-line"></div>
+                      <div class="ruler-pin-indicator" id="rulerPinIndicator" style="left: ${(this.currentKm / totalKm) * 100}%;">
+                        <!-- Floating Tooltip on Top Pin -->
+                        <div class="strip-needle-tooltip" id="needleTooltip">
+                          <div class="tooltip-header">
+                            <span class="tooltip-station" id="tooltipStationText">${this.formatAbscissa(this.currentKm)}</span>
+                            <span class="tooltip-status-pill" id="tooltipStatusPill">En progreso</span>
+                          </div>
+                          <div class="tooltip-body">
+                            <span class="tooltip-subtitle">Actividades en esta abscisa:</span>
+                            <ul class="tooltip-activities-list" id="tooltipActivitiesList">
+                              <!-- Populated dynamically -->
+                            </ul>
+                          </div>
+                          <a href="javascript:void(0)" class="tooltip-action-link" id="tooltipInspectAction">
+                            Ver detalle de estación <i class="fas fa-arrow-right"></i>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="band-progress-cell">
-              <div class="band-progress-badge" style="font-size: 0.75rem; color: #dc2626; font-weight: 800;" id="scrubberBadgeRight">
-                K 0+000
+
+            <!-- Synchronized Lanes Scrollable Container -->
+            <div class="strip-lanes-scroll-viewport" id="lanesViewport">
+              <div class="strip-lanes-content-wrapper" id="lanesContentWrapper">
+
+                <!-- Synchronized Vertical Red Needle (Spans across all bands) -->
+                <div class="strip-sync-needle" id="stripSyncNeedle" style="left: calc(240px + 1rem + ((100% - 240px - 1rem) * ${(this.currentKm / totalKm)}));">
+                  <!-- Vertical Red Line -->
+                  <div class="needle-vertical-line"></div>
+
+                  <!-- Bottom Red Station Badge -->
+                  <div class="needle-bottom-badge" id="needleBottomBadge">${this.formatAbscissa(this.currentKm)}</div>
+                </div>
+
+                <!-- Lane 1: Drenaje (Cunetas en barra progresiva, Filtros en puntos, Alcantarillas en puntos) -->
+                <div class="strip-lane-row" data-lane="drenaje" id="laneDrenaje">
+                  <div class="lane-meta-card">
+                    <div class="lane-meta-header">
+                      <div class="lane-avatar avatar-drenaje">
+                        <i class="fas fa-droplet"></i>
+                      </div>
+                      <div class="lane-meta-texts">
+                        <h4 class="lane-title">Drenaje y obras</h4>
+                        <span class="lane-subtitle" id="laneSubtitleDrenaje">Cunetas, filtros y 22 alcantarillas · ${totalKm.toFixed(2)} km</span>
+                      </div>
+                    </div>
+                    <div class="lane-sublayers-legend">
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-cuneta"></span> Cunetas (Barra progresiva · 0% ejec.)</div>
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-filtro"></span> Filtros (Puntos · 1.164 ml continuos)</div>
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-alcantarilla"></span> Alcantarillas (22 puntos singulares)</div>
+                    </div>
+                    <div class="lane-progress-row">
+                      <span class="lane-pct-text" id="lanePctDrenaje">48,9%</span>
+                      <div class="lane-progress-bar-bg">
+                        <div class="lane-progress-bar-fill fill-drenaje" id="laneFillDrenaje" style="width: 48.9%;"></div>
+                      </div>
+                      <span class="lane-status-badge status-progress">
+                        <span class="status-dot"></span> En ejecución
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="lane-track-card" id="laneTrackDrenaje">
+                    ${this.renderDrenajeTrack(puntos, totalKm)}
+                  </div>
+                </div>
+
+                <!-- Lane 2: Estructura de pavimento (3 capas discriminadas en barras) -->
+                <div class="strip-lane-row" data-lane="estructura" id="laneEstructura">
+                  <div class="lane-meta-card">
+                    <div class="lane-meta-header">
+                      <div class="lane-avatar avatar-estructura">
+                        <i class="fas fa-cubes-stacked"></i>
+                      </div>
+                      <div class="lane-meta-texts">
+                        <h4 class="lane-title">Estructura pavimento</h4>
+                        <span class="lane-subtitle" id="laneSubtitleEstructura">Paquete de 3 capas · ${totalKm.toFixed(2)} km</span>
+                      </div>
+                    </div>
+                    <div class="lane-sublayers-legend">
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-rodadura"></span> Rodadura (TSD/MDC)</div>
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-mgtc"></span> Base Cemento MGTC</div>
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-cal"></span> Subrasante con Cal</div>
+                    </div>
+                    <div class="lane-progress-row">
+                      <span class="lane-pct-text" id="lanePctEstructura">12,4%</span>
+                      <div class="lane-progress-bar-bg">
+                        <div class="lane-progress-bar-fill fill-estructura" id="laneFillEstructura" style="width: 12.4%;"></div>
+                      </div>
+                      <span class="lane-status-badge status-progress">
+                        <span class="status-dot"></span> En ejecución
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="lane-track-card" id="laneTrackEstructura">
+                    ${this.renderEstructuraTrack(totalKm)}
+                  </div>
+                </div>
+
+                <!-- Lane 3: Campo (Topografía como barra de progreso, Apiques como puntos) -->
+                <div class="strip-lane-row" data-lane="campo" id="laneCampo">
+                  <div class="lane-meta-card">
+                    <div class="lane-meta-header">
+                      <div class="lane-avatar avatar-campo">
+                        <i class="fas fa-compass-drafting"></i>
+                      </div>
+                      <div class="lane-meta-texts">
+                        <h4 class="lane-title">Campo y Geotecnia</h4>
+                        <span class="lane-subtitle" id="laneSubtitleCampo">Topografía y exploración · ${totalKm.toFixed(2)} km</span>
+                      </div>
+                    </div>
+                    <div class="lane-sublayers-legend">
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-topo"></span> Topografía (Barra 16 km · 67,3%)</div>
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-apiques"></span> Apiques (Puntos 21 km · 88,4%)</div>
+                    </div>
+                    <div class="lane-progress-row">
+                      <span class="lane-pct-text" id="lanePctCampo">77,8%</span>
+                      <div class="lane-progress-bar-bg">
+                        <div class="lane-progress-bar-fill fill-campo" id="laneFillCampo" style="width: 77.8%;"></div>
+                      </div>
+                      <span class="lane-status-badge status-progress">
+                        <span class="status-dot"></span> En ejecución
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="lane-track-card" id="laneTrackCampo">
+                    ${this.renderCampoTrack(totalKm)}
+                  </div>
+                </div>
+
+                <!-- Lane 4: Señalización y otros -->
+                <div class="strip-lane-row" data-lane="senalizacion" id="laneSenalizacion">
+                  <div class="lane-meta-card">
+                    <div class="lane-meta-header">
+                      <div class="lane-avatar avatar-senalizacion">
+                        <i class="fas fa-triangle-exclamation"></i>
+                      </div>
+                      <div class="lane-meta-texts">
+                        <h4 class="lane-title">Señalización y otros</h4>
+                        <span class="lane-subtitle" id="laneSubtitleSenalizacion">Señales, defensas y demarcación · ${totalKm.toFixed(2)} km</span>
+                      </div>
+                    </div>
+                    <div class="lane-sublayers-legend">
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-senal"></span> Señales verticales (K2+000, K14+200)</div>
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-defensas"></span> Defensas metálicas (K7+500)</div>
+                      <div class="sublayer-item"><span class="sublayer-bullet bullet-demarcacion"></span> Demarcación vial (K19+800)</div>
+                    </div>
+                    <div class="lane-progress-row">
+                      <span class="lane-pct-text" id="lanePctSenalizacion">18,7%</span>
+                      <div class="lane-progress-bar-bg">
+                        <div class="lane-progress-bar-fill fill-senalizacion" id="laneFillSenalizacion" style="width: 18.7%;"></div>
+                      </div>
+                      <span class="lane-status-badge status-progress">
+                        <span class="status-dot"></span> En ejecución
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="lane-track-card" id="laneTrackSenalizacion">
+                    ${this.renderSenalizacionTrack(totalKm)}
+                  </div>
+                </div>
+
               </div>
             </div>
+
+            <!-- Reopen Inspector Button (if panel is closed) -->
+            <div id="reopenPanelContainer" style="${this.panelOpen ? 'display: none;' : 'display: flex;'} justify-content: flex-end;">
+              <button class="btn-reopen-station-panel" id="btnReopenStationPanel">
+                <i class="fas fa-location-dot"></i> Ver detalle de estación (${this.formatAbscissa(this.currentKm)})
+              </button>
+            </div>
+
           </div>
 
-          <!-- BANDA 1: OBRAS PUNTUALES DE DRENAJE (ALCANTARILLAS) -->
-          <div class="discipline-band-row" data-band="banda-puntual">
-            <div class="band-meta-bracket bracket-puntual">
-              <div>
-                <span class="band-bracket-title"><i class="fas fa-circle-dot" style="color: #0284c7;"></i> Obras Puntuales</span>
-                <span class="band-bracket-sub">Alcantarillas (22 Obras)</span>
-                <div style="display: flex; gap: 4px; margin-top: 4px; font-size: 0.65rem;">
-                  <span title="Completada" style="color: #059669;">●</span>
-                  <span title="En Ejecución" style="color: #f59e0b;">●</span>
-                  <span title="Nueva 36 pulg." style="color: #2563eb;">★</span>
-                  <span title="Pendiente" style="color: #94a3b8;">●</span>
-                  <span title="Anulada" style="color: #ef4444;">✕</span>
-                </div>
-              </div>
+          <!-- Right Side Panel: Detalle de estación -->
+          <div class="strip-station-panel" id="stripStationPanel">
+            <div class="station-panel-header">
+              <h3 class="station-panel-title">Detalle de estación</h3>
+              <button class="station-panel-close-btn" id="stationPanelCloseBtn" title="Cerrar panel">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
 
-            <div class="band-graphic-track" id="trackCulverts" style="height: 38px;">
-              <div class="culverts-linear-track">
-                <div class="culverts-baseline"></div>
-                ${this.renderCulvertPins(puntos, totalKm)}
-              </div>
-            </div>
-
-            <div class="band-progress-cell">
-              <div class="band-progress-badge badge-success">48,9%</div>
-              <span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">11 / 22 Obras</span>
-            </div>
-          </div>
-
-          <!-- BANDA 2: DRENAJE LONGITUDINAL (CUNETAS & FILTROS) -->
-          <div class="discipline-band-row" data-band="banda-drenaje">
-            <div class="band-meta-bracket bracket-drenaje">
-              <div>
-                <span class="band-bracket-title"><i class="fas fa-water" style="color: #2563eb;"></i> Drenaje Lineal</span>
-                <span class="band-bracket-sub">Cunetas y Filtros Granulares</span>
-                <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 3px; display: flex; gap: 6px;">
-                  <span><strong style="color: #2563eb; background: rgba(37,99,235,0.1); padding: 1px 4px; border-radius: 3px;">MI:</strong> Izq.</span>
-                  <span><strong style="color: #0284c7; background: rgba(2,132,199,0.1); padding: 1px 4px; border-radius: 3px;">MD:</strong> Der.</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="band-graphic-track" style="height: 44px; cursor: pointer;">
-              <div class="dual-margin-track">
-                <!-- Margen Izquierda (MI) -->
-                <div class="margin-subtrack" title="Margen Izquierda (MI)">
-                  <!-- Filtro Longitudinal Granular K 0+086 a K 1+250 (1.164 ml) -->
-                  <div class="filter-longitudinal-bar" 
-                       style="left: ${(0.086 / totalKm) * 100}%; width: ${((1.250 - 0.086) / totalKm) * 100}%;"
-                       title="Filtro Granular Longitudinal MI: K 0+086 a K 1+250 (1.164 ml)">
-                    <span class="linear-text-label"><i class="fas fa-filter"></i> Filtro 1.164 ml</span>
-                  </div>
-                  <!-- Cunetas MI -->
-                  <div class="cunetas-bar" style="left: ${(1.250 / totalKm) * 100}%; width: ${(2.5 / totalKm) * 100}%; opacity: 0.5;" title="Cunetas MI Proyectadas">
-                    <span class="linear-text-label">Cunetas MI</span>
-                  </div>
-                </div>
-
-                <!-- Margen Derecha (MD) -->
-                <div class="margin-subtrack" title="Margen Derecha (MD)">
-                  <!-- Cunetas MD -->
-                  <div class="cunetas-bar" style="left: 0%; width: ${(1.250 / totalKm) * 100}%; opacity: 0.5;" title="Cunetas MD K 0+000 a K 1+250">
-                    <span class="linear-text-label">Cunetas MD (1,25 km)</span>
-                  </div>
-                  <!-- Filtro MD puntual -->
-                  <div class="filter-longitudinal-bar" style="left: ${(2.8 / totalKm) * 100}%; width: ${(0.4 / totalKm) * 100}%; opacity: 0.6;" title="Filtro MD puntual"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="band-progress-cell">
-              <div class="band-progress-badge">4,1%</div>
-              <span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">1.164 ml Filtro</span>
-            </div>
-          </div>
-
-          <!-- BANDA 3: PAQUETE ESTRUCTURAL (PAVIMENTO ESTRATIGRÁFICO) -->
-          <div class="discipline-band-row" data-band="banda-estructura">
-            <div class="band-meta-bracket bracket-estructura">
-              <div>
-                <span class="band-bracket-title"><i class="fas fa-layer-group" style="color: #d97706;"></i> Estructura</span>
-                <span class="band-bracket-sub">Paquete Pavimento</span>
-                <div style="display: flex; flex-direction: column; gap: 1px; font-size: 0.62rem; color: var(--text-muted); margin-top: 2px;">
-                  <span><strong style="color: #1e293b;">■</strong> Rodadura (TSD/MDC)</span>
-                  <span><strong style="color: #d97706;">■</strong> Base Cemento MGTC</span>
-                  <span><strong style="color: #92400e;">■</strong> Subrasante con Cal</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="band-graphic-track" style="height: 52px; cursor: pointer;">
-              <div class="pavement-strata-track">
-                <!-- Layer 1: Rodadura (TSD / MDC-19) -->
-                <div class="strata-layer" title="Capa de Rodadura (TSD en pendientes ≤ 8% / MDC-19 en pendientes > 8%)">
-                  <div class="strata-fill fill-rodadura" style="left: 0%; width: ${(1.2 / totalKm) * 100}%;" title="TSD Rodadura K 0+000 a K 1+200">
-                    <span class="strata-text-label">TSD (1,2 km)</span>
-                  </div>
-                  <div class="strata-fill fill-rodadura" style="left: ${(1.2 / totalKm) * 100}%; width: ${(2.6 / totalKm) * 100}%; background: #0f172a;" title="MDC-19 Caliente K 1+200 a K 3+800">
-                    <span class="strata-text-label"><i class="fas fa-fire" style="color: #f97316;"></i> MDC-19 Caliente (2,6 km)</span>
-                  </div>
-                  <div class="strata-fill fill-rodadura" style="left: ${(3.8 / totalKm) * 100}%; width: ${(1.7 / totalKm) * 100}%;" title="TSD Rodadura K 3+800 a K 5+500">
-                    <span class="strata-text-label">TSD K3+800</span>
-                  </div>
-                </div>
-
-                <!-- Layer 2: Cemento MGTC (20 a 28 cm) -->
-                <div class="strata-layer" title="Base Estabilizada con Cemento Portland (MGTC 20-28 cm)">
-                  <div class="strata-fill fill-cemento" style="left: 0%; width: ${(3.5 / totalKm) * 100}%;" title="Frente Base MGTC K 0+000 a K 3+500 (3,5 km)">
-                    <span class="strata-text-label"><i class="fas fa-cubes"></i> Cemento MGTC 20-28 cm (K 0+000 a K 3+500)</span>
-                  </div>
-                </div>
-
-                <!-- Layer 3: Subrasante Estabilizada con Cal (20 cm) -->
-                <div class="strata-layer" title="Subrasante Estabilizada con Cal al 3% (20 cm)">
-                  <div class="strata-fill fill-subrasante" style="left: 0%; width: ${(1.8 / totalKm) * 100}%;" title="Subrasante Cal K 0+000 a K 1+800 (1,8 km)">
-                    <span class="strata-text-label"><i class="fas fa-mountain"></i> Subrasante Cal 3% (1,8 km)</span>
-                  </div>
-                  <div class="strata-fill fill-subrasante" style="left: ${(15.0 / totalKm) * 100}%; width: ${((23.77 - 15.0) / totalKm) * 100}%;" title="Subrasante Cal K 15+000 a K 23+770 (8,77 km)">
-                    <span class="strata-text-label">Subrasante Cal K15-K23.7</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="band-progress-cell">
-              <div class="band-progress-badge">2,58%</div>
-              <span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Avance Físico</span>
-            </div>
-          </div>
-
-          <!-- BANDA 4: CAMPO (TOPOGRAFÍA & GEOTECNIA) -->
-          <div class="discipline-band-row" data-band="banda-campo">
-            <div class="band-meta-bracket bracket-campo">
-              <div>
-                <span class="band-bracket-title"><i class="fas fa-drafting-compass" style="color: #059669;"></i> Campo</span>
-                <span class="band-bracket-sub">Topografía & Geotecnia</span>
-                <div style="display: flex; flex-direction: column; gap: 1px; font-size: 0.62rem; color: var(--text-muted); margin-top: 2px;">
-                  <span><strong style="color: #059669;">■</strong> Topografía (16 km / 67%)</span>
-                  <span><strong style="color: #0284c7;">■</strong> Apiques CBR (21 km / 88%)</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="band-graphic-track" style="height: 44px; cursor: pointer;">
-              <div class="field-progress-track">
-                <!-- Topografía (K 0+000 a K 16+000) -->
-                <div class="field-subtrack" title="Levantamiento Topográfico Altimétrico: K 0+000 al K 16+000 (16,00 km / 67,31%)">
-                  <div class="field-fill-topografia" style="left: 0%; width: ${(16.0 / totalKm) * 100}%;">
-                    <span class="field-text-label"><i class="fas fa-check-circle"></i> Topografía K 0+000 a K 16+000 (16,0 km / 67,3%)</span>
-                  </div>
-                </div>
-
-                <!-- Apiques Geotécnicos (K 0+000 a K 21+000) -->
-                <div class="field-subtrack" title="Exploración Geotécnica con Apiques: K 0+000 al K 21+000 (21,00 km / 88,35%)">
-                  <div class="field-fill-apiques" style="left: 0%; width: ${(21.0 / totalKm) * 100}%;">
-                    <span class="field-text-label"><i class="fas fa-check-circle"></i> Apiques Geotécnicos CBR K 0+000 a K 21+000 (21,0 km / 88,4%)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="band-progress-cell">
-              <div class="band-progress-badge badge-success">88,4%</div>
-              <span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">21 km Apiques</span>
+            <div class="station-panel-body" id="stationPanelBody">
+              <!-- Populated dynamically by updateStationPanel -->
             </div>
           </div>
 
         </div>
 
-        <!-- Interactive Culvert Popover Anchor -->
-        <div id="culvertPopoverContainer" style="position: relative; display: none;"></div>
+        <!-- 3. Bottom Section: Resumen de avance por actividad (5 Cards) -->
+        <div class="strip-summary-section">
+          <div class="strip-summary-header">
+            <h4 class="strip-summary-title">Resumen de avance por actividad</h4>
+            <a href="javascript:void(0)" class="strip-summary-link" id="stripSummaryExpandLink">
+              Ver detalle completo <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
 
-        <!-- Searchable Georeferenced Inventory Table -->
-        <div style="margin-top: 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.75rem;">
-            <div>
-              <h4 style="font-size: 0.92rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-list-check" style="color: var(--brand-green);"></i>
-                Inventario Georreferenciado de Puntos Singulares y Obras de Drenaje
-              </h4>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">
-                21 Reposiciones de Alcantarillas · 1 Alcantarilla Nueva (K 3+105) · 1.164 ml Filtros · Obras Anuladas
-              </span>
-            </div>
+          <div class="strip-summary-cards-grid" id="stripSummaryCardsGrid">
+            ${this.renderSummaryCards(totalKm, culvertsCount)}
+          </div>
+        </div>
 
-            <!-- Fast Search Input -->
-            <div style="position: relative;">
-              <input type="text" id="inventorySearchInput" placeholder="Buscar por abscisa (ej: 0+579, 3+105)..." 
-                     style="padding: 0.35rem 0.75rem 0.35rem 2rem; font-size: 0.78rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); outline: none; width: 260px;" />
-              <i class="fas fa-search" style="position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--text-muted);"></i>
+        <!-- 4. Collapsible Georeferenced Inventory Table -->
+        <div class="strip-inventory-collapsible" id="stripInventoryCollapsible" style="display: none;">
+          <div class="inventory-collapsible-header">
+            <h4>
+              <i class="fas fa-list-check" style="color: var(--brand-green);"></i>
+              Inventario Georreferenciado de Puntos Singulares y Obras de Drenaje (${puntos.length} Registros)
+            </h4>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" id="inventoryTableSearch" placeholder="Filtrar en tabla (ej: 0+579)..." 
+                     style="padding: 0.35rem 0.75rem; font-size: 0.78rem; border: 1px solid var(--border-subtle); border-radius: 6px; background: var(--bg-subtle); color: var(--text-primary); outline: none;" />
+              <button class="btn-icon" id="btnCloseInventory" style="width: 28px; height: 28px;" title="Cerrar tabla">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </div>
 
-          <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+          <div class="table-container" style="max-height: 300px; overflow-y: auto;">
             <table class="data-table" style="font-size: 0.78rem;">
               <thead>
                 <tr>
@@ -402,7 +348,7 @@ class AbscissasManager {
                 </tr>
               </thead>
               <tbody id="inventoryTableBody">
-                ${this.renderInventoryRows(puntos)}
+                ${this.renderInventoryTableRows(puntos)}
               </tbody>
             </table>
           </div>
@@ -412,64 +358,1051 @@ class AbscissasManager {
     `;
 
     this.attachEvents(totalKm, puntos);
-    const isE18 = corridor && (corridor.code === 'E-18' || corridor.code === 'E18' || corridor.id === 'E-18' || (corridor.name && corridor.name.includes('Abejorral')));
-    const initialKm = isE18 ? 1.150 : 0;
-    this.setMarkerKm(initialKm, totalKm, puntos);
+    this.updateMarker(this.currentKm, totalKm, puntos);
   }
 
-  renderCulvertPins(puntos, totalKm) {
-    return puntos.map((p, idx) => {
-      const leftPct = Math.min(99.4, Math.max(0.6, (p.km / totalKm) * 100));
+  /* --------------------------------------------------------------------------
+     RENDER HELPERS: RULER TICKS & GRAPHIC LANES
+     -------------------------------------------------------------------------- */
 
-      let stateClass = 'state-completed';
-      let icon = idx + 1;
+  renderRulerTicks(totalKm) {
+    const ticks = [];
+    const step = 2.0; // Every 2 km ticks (K0, K2, K4...)
+    const numSteps = Math.floor(totalKm / step);
 
-      if (p.categoria === 'alcantarilla_nueva') {
-        stateClass = 'state-new';
-        icon = '★';
-      } else if (p.categoria === 'anulada') {
-        stateClass = 'state-annulled';
-        icon = '✕';
-      } else if (p.km > 1.25 && p.km < 3.5) {
-        stateClass = 'state-progress'; // Active front zone
-      } else if (p.km >= 3.5) {
-        stateClass = 'state-pending';
-      }
+    for (let i = 0; i <= numSteps; i++) {
+      const km = i * step;
+      const pct = (km / totalKm) * 100;
+      ticks.push(`
+        <div class="ruler-tick-label" style="left: ${pct.toFixed(2)}%;">
+          K${i * 2}
+        </div>
+      `);
+    }
 
-      // Special highlight for authentic field photo
+    // Final point tick if not aligned
+    const lastKm = totalKm;
+    const lastPct = 100;
+    const kPart = Math.floor(lastKm);
+    const mPart = Math.round((lastKm - kPart) * 1000);
+    const lastStr = mPart > 0 ? `K${kPart}+${String(mPart).padStart(3, '0')}` : `K${kPart}`;
+    ticks.push(`
+      <div class="ruler-tick-label" style="left: ${lastPct}%; transform: translateX(-100%);">
+        ${lastStr}
+      </div>
+    `);
+
+    return ticks.join('');
+  }
+
+  /* --------------------------------------------------------------------------
+     DISCIPLINE TRACK RENDERERS (MULTI-SUBTRACK ARCHITECTURE)
+     -------------------------------------------------------------------------- */
+
+  // 1. DRENAJE Y OBRAS DE ARTE (Cunetas en barra progresiva, Filtros en puntos, Alcantarillas en puntos)
+  renderDrenajeTrack(puntos, totalKm) {
+    return `
+      <div class="lane-subtracks-container">
+        <!-- Sub-carril 1: Cunetas (Barra Progresiva) -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-drenaje"></div>
+          ${this.renderCunetasSubtrack(totalKm)}
+        </div>
+        <!-- Sub-carril 2: Filtros (Puntos y tramo continuo de 1.164 ml) -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-drenaje"></div>
+          ${this.renderFiltrosSubtrack(totalKm)}
+        </div>
+        <!-- Sub-carril 3: Alcantarillas (22 puntos singulares georreferenciados) -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-drenaje"></div>
+          ${this.renderAlcantarillasSubtrack(puntos, totalKm)}
+        </div>
+      </div>
+    `;
+  }
+
+  renderCunetasSubtrack(totalKm) {
+    // Cunetas programadas a lo largo de los 23.77 km (31.489 ml presupuestadas, 0% ejecutadas a la fecha)
+    return `
+      <div class="subtrack-bar bar-cuneta-planned" data-start="0" data-end="${totalKm}" style="left: 0%; width: 100%;"
+           title="Cunetas longitudinales en concreto · 23,77 km presupuestados (31.489 ml · 0,0% ejec. · Pendiente de vaciado)">
+        <span><i class="fas fa-droplet" style="margin-right: 4px;"></i> Cunetas longitudinales en concreto · 23,77 km (0,0% ejec. · Pendiente vaciado)</span>
+        <span style="font-size: 0.62rem; opacity: 0.85;">Invías Art. 671</span>
+      </div>
+    `;
+  }
+
+  renderFiltrosSubtrack(totalKm) {
+    // Tramo de filtro granular K0+086 a K1+250 (1.164 ml continuos)
+    const startKm = 0.086;
+    const endKm = 1.250;
+    const startPct = (startKm / totalKm) * 100;
+    const endPct = (endKm / totalKm) * 100;
+    const widthPct = endPct - startPct;
+
+    return `
+      <div class="filter-span-band" data-start="${startKm}" data-end="${endKm}" 
+           style="left: ${startPct.toFixed(2)}%; width: ${widthPct.toFixed(2)}%;"
+           title="Subdren / Filtro Granular Longitudinal · K 0+086 a K 1+250 (1.164 ml continuos con geotextil y grava filtrante)">
+        1.164 ml continuos
+      </div>
+      <div class="subtrack-point-node point-filtro" data-km="${startKm}" style="left: ${startPct.toFixed(2)}%;"
+           title="K 0+086 · Inicio Filtro Longitudinal Granular (1.164 ml)">
+        <i class="fas fa-filter"></i>
+      </div>
+      <span class="subtrack-point-label" style="left: ${startPct.toFixed(2)}%;">K0+086 (Inicio)</span>
+      <div class="subtrack-point-node point-filtro point-has-photo" data-km="${endKm}" style="left: ${endPct.toFixed(2)}%;"
+           title="K 1+250 · Fin Filtro Longitudinal Granular (1.164 ml · Foto disponible)">
+        <i class="fas fa-filter"></i>
+      </div>
+      <span class="subtrack-point-label" style="left: ${endPct.toFixed(2)}%;">K1+250 (Fin)</span>
+    `;
+  }
+
+  renderAlcantarillasSubtrack(puntos, totalKm) {
+    const culverts = puntos.filter(p => p.categoria === 'alcantarilla' || p.categoria === 'alcantarilla_nueva' || p.categoria === 'anulada');
+
+    let lastLabelPct = -20;
+    const minGapPct = Math.max(3.0, 7.5 / (this.zoomLevel || 1.0));
+
+    return culverts.map((p, idx) => {
+      const pct = Math.min(99.4, Math.max(0.6, (p.km / totalKm) * 100));
+      const isNew = p.categoria === 'alcantarilla_nueva';
+      const isAnulada = p.categoria === 'anulada';
       const hasPhoto = !!p.foto;
 
+      let pointClass = 'point-alcantarilla';
+      let icon = '<i class="fas fa-circle-dot" style="font-size: 0.5rem;"></i>';
+
+      if (isNew) {
+        pointClass = 'point-alcantarilla-nueva';
+        icon = '<i class="fas fa-star" style="font-size: 0.55rem;"></i>';
+      } else if (isAnulada) {
+        pointClass = 'point-alcantarilla-anulada';
+        icon = '<i class="fas fa-times" style="font-size: 0.55rem;"></i>';
+      }
+      if (hasPhoto) pointClass += ' point-has-photo';
+
+      const shortAbs = p.abscisa.replace(' ', '');
+      const cleanLabel = isNew ? `${shortAbs} (Nueva)` : (isAnulada ? `${shortAbs} (Anulada)` : `${shortAbs}`);
+
+      let showLabel = false;
+      if (pct - lastLabelPct >= minGapPct) {
+        showLabel = true;
+        lastLabelPct = pct;
+      }
+
       return `
-        <div class="culvert-dot ${stateClass}" 
+        <div class="subtrack-point-node ${pointClass}"
              data-km="${p.km}"
-             data-cat="${p.categoria}"
-             data-abs="${p.abscisa}"
              data-idx="${idx}"
-             style="left: ${leftPct}%;"
+             style="left: ${pct.toFixed(2)}%;"
              title="${p.abscisa} · ${p.nombre} (${p.detalle})">
           ${icon}
+        </div>
+        ${showLabel ? `
+          <span class="subtrack-point-label" style="left: ${pct.toFixed(2)}%;">
+            ${cleanLabel}
+          </span>
+        ` : ''}
+      `;
+    }).join('');
+  }
+
+  // 2. ESTRUCTURA DE PAVIMENTO (Discriminada en 3 capas de barras de progreso)
+  renderEstructuraTrack(totalKm) {
+    return `
+      <div class="lane-subtracks-container">
+        <!-- Capa 1: Rodadura (TSD / MDC-19) -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-estructura"></div>
+          ${this.renderRodaduraSubtrack(totalKm)}
+        </div>
+        <!-- Capa 2: Base Cemento MGTC -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-estructura"></div>
+          ${this.renderMgtcSubtrack(totalKm)}
+        </div>
+        <!-- Capa 3: Subrasante con Cal -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-estructura"></div>
+          ${this.renderSubrasanteSubtrack(totalKm)}
+        </div>
+      </div>
+    `;
+  }
+
+  renderRodaduraSubtrack(totalKm) {
+    // Rodadura dividida en tramos reales:
+    // K 0+000 a K 1+200 (1.2 km TSD)
+    // K 1+200 a K 3+800 (2.6 km MDC-19 Caliente en fuerte pendiente)
+    // K 3+800 a K 5+500 (1.7 km TSD)
+    const segs = [
+      { start: 0, end: 1.2, title: "TSD (1,2 km)", class: "bar-tsd", tooltip: "K 0+000 a K 1+200 · TSD Tratamiento Superficial Doble (1,2 km)" },
+      { start: 1.2, end: 3.8, title: "🔥 MDC-19 Caliente (2,6 km)", class: "bar-mdc", tooltip: "K 1+200 a K 3+800 · MDC-19 Mezcla Densa en Caliente (2,6 km · Fuerte pendiente > 8%)" },
+      { start: 3.8, end: 5.5, title: "TSD K3+800", class: "bar-tsd", tooltip: "K 3+800 a K 5+500 · TSD Tratamiento Superficial Doble (1,7 km)" }
+    ];
+
+    return segs.map(s => {
+      const leftPct = (s.start / totalKm) * 100;
+      const widthPct = ((s.end - s.start) / totalKm) * 100;
+      return `
+        <div class="subtrack-bar ${s.class}" data-start="${s.start}" data-end="${s.end}"
+             style="left: ${leftPct.toFixed(2)}%; width: ${widthPct.toFixed(2)}%;"
+             title="${s.tooltip}">
+          ${s.title}
         </div>
       `;
     }).join('');
   }
 
-  renderInventoryRows(puntos) {
+  renderMgtcSubtrack(totalKm) {
+    // Base cementada MGTC: K 0+000 a K 3+500 (3.5 km, espesor 20 a 28 cm)
+    const start = 0;
+    const end = 3.5;
+    const leftPct = (start / totalKm) * 100;
+    const widthPct = ((end - start) / totalKm) * 100;
+
+    return `
+      <div class="subtrack-bar bar-mgtc" data-start="${start}" data-end="${end}"
+           style="left: ${leftPct.toFixed(2)}%; width: ${widthPct.toFixed(2)}%;"
+           title="K 0+000 a K 3+500 · Base Estabilizada con Cemento (MGTC) 20 a 28 cm con recicladora Wirtgen (3,5 km)">
+        <i class="fas fa-cubes" style="margin-right: 4px;"></i> Cemento MGTC 20–28 cm (K 0+000 - K 3+500)
+      </div>
+    `;
+  }
+
+  renderSubrasanteSubtrack(totalKm) {
+    // Subrasante estabilizada con cal:
+    // Sector 1: K 0+000 a K 1+800 (1.8 km plataforma afirmado y cal viva al 3%)
+    // Sector 2: K 15+000 a K 23+770 (8.77 km Sector El Cairo)
+    const segs = [
+      { start: 0, end: 1.8, title: "Cal K0–K1.8", tooltip: "K 0+000 a K 1+800 · Subrasante con cal viva al 3% (1,8 km)" },
+      { start: 15.0, end: totalKm, title: "⛰️ Subrasante Cal K15–K23.7 (8,77 km)", tooltip: `K 15+000 a ${this.formatAbscissa(totalKm)} · Sector El Cairo Subrasante tratada con cal (8,77 km)` }
+    ];
+
+    return segs.map(s => {
+      const leftPct = (s.start / totalKm) * 100;
+      const widthPct = ((s.end - s.start) / totalKm) * 100;
+      return `
+        <div class="subtrack-bar bar-cal" data-start="${s.start}" data-end="${s.end}"
+             style="left: ${leftPct.toFixed(2)}%; width: ${widthPct.toFixed(2)}%;"
+             title="${s.tooltip}">
+          ${s.title}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 3. CAMPO Y GEOTECNIA (Topografía como barra de progreso, Apiques como puntos)
+  renderCampoTrack(totalKm) {
+    return `
+      <div class="lane-subtracks-container">
+        <!-- Elemento 1: Topografía (Barra Progresiva Continua K0 a K16) -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-campo"></div>
+          ${this.renderTopografiaSubtrack(totalKm)}
+        </div>
+        <!-- Elemento 2: Apiques (Puntos de exploración geotécnica K0 a K21) -->
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-campo"></div>
+          ${this.renderApiquesSubtrack(totalKm)}
+        </div>
+      </div>
+    `;
+  }
+
+  renderTopografiaSubtrack(totalKm) {
+    // Topografía: 16,00 km de 23,77 km = 67,31% ejecutado continuo
+    const end = 16.0;
+    const widthPct = (end / totalKm) * 100;
+
+    return `
+      <div class="subtrack-bar bar-topografia" data-start="0" data-end="${end}"
+           style="left: 0%; width: ${widthPct.toFixed(2)}%;"
+           title="K 0+000 a K 16+000 · Levantamiento Topográfico Altimétrico y Planimétrico (16,00 km levantados de 23,77 km · 67,31% de avance)">
+        <i class="fas fa-drafting-compass" style="margin-right: 5px;"></i> Levantamiento Topográfico K0+000 a K16+000 (16 km · 67,3%)
+      </div>
+    `;
+  }
+
+  renderApiquesSubtrack(totalKm) {
+    // Apiques: PUNTOS de exploración geotécnica cubriendo los 21 km (88,35%)
+    const apiqueKms = [0.8, 2.4, 4.2, 6.8, 9.5, 11.8, 13.4, 16.0, 18.5, 21.0].filter(k => k <= totalKm);
+
+    return apiqueKms.map(k => {
+      const pct = (k / totalKm) * 100;
+      const absStr = this.formatAbscissa(k);
+      return `
+        <div class="subtrack-point-node point-apique" data-km="${k}"
+             style="left: ${pct.toFixed(2)}%;"
+             title="${absStr} · Apique Geotécnico de Suelos (Sondeo estratigráfico hasta 1,50 m)">
+          ▲
+        </div>
+        <span class="subtrack-point-label" style="left: ${pct.toFixed(2)}%;">
+          ${absStr}
+        </span>
+      `;
+    }).join('');
+  }
+
+  // 4. SEÑALIZACIÓN Y OTROS
+  renderSenalizacionTrack(totalKm) {
+    return `
+      <div class="lane-subtracks-container">
+        <div class="lane-subtrack-row">
+          <div class="subtrack-guideline subtrack-guideline-senalizacion"></div>
+          ${this.renderSenalizacionPins(totalKm)}
+        </div>
+      </div>
+    `;
+  }
+
+  renderSenalizacionPins(totalKm) {
+    const pins = [
+      { km: 2.0, label: "K2+000 Señales" },
+      { km: 7.5, label: "K7+500 Defensas" },
+      { km: 14.2, label: "K14+200 Señales" },
+      { km: 19.8, label: "K19+800 Demarcación" }
+    ].filter(p => p.km <= totalKm);
+
+    return pins.map(p => {
+      const pct = (p.km / totalKm) * 100;
+      return `
+        <div class="lane-purple-pin" data-km="${p.km}" style="left: ${pct.toFixed(2)}%;" title="${p.label}"></div>
+        <span class="lane-purple-label" style="left: ${pct.toFixed(2)}%;">
+          ${p.label}
+        </span>
+      `;
+    }).join('');
+  }
+
+  /* --------------------------------------------------------------------------
+     SUMMARY CARDS (5 CARDS MATCHING REFERENCE MOCKUP)
+     -------------------------------------------------------------------------- */
+
+  renderSummaryCards(totalKm, culvertsCount) {
+    const cards = [
+      {
+        iconLetter: "A",
+        avatarClass: "avatar-puntual",
+        title: "Obras puntuales / Alcantarillas",
+        units: `${culvertsCount} unidades`,
+        pct: "66,7%",
+        pctVal: 66.7,
+        fillClass: "fill-puntual",
+        badgeText: "En ejecución",
+        presupuesto: "$ 1.250.000.000",
+        ejecutado: "$ 833.500.000",
+        status: "En ejecución"
+      },
+      {
+        iconFontAwesome: "fa-droplet",
+        avatarClass: "avatar-drenaje",
+        title: "Drenaje longitudinal",
+        units: "21,4 km",
+        pct: "48,9%",
+        pctVal: 48.9,
+        fillClass: "fill-drenaje",
+        badgeText: "48,9%",
+        presupuesto: "$ 980.000.000",
+        ejecutado: "$ 479.200.000",
+        status: "En ejecución"
+      },
+      {
+        iconFontAwesome: "fa-cubes-stacked",
+        avatarClass: "avatar-estructura",
+        title: "Estructura de pavimento",
+        units: `${totalKm.toFixed(2)} km`,
+        pct: "12,4%",
+        pctVal: 12.4,
+        fillClass: "fill-estructura",
+        badgeText: "12,4%",
+        presupuesto: "$ 4.750.000.000",
+        ejecutado: "$ 589.000.000",
+        status: "En ejecución"
+      },
+      {
+        iconFontAwesome: "fa-compass-drafting",
+        avatarClass: "avatar-campo",
+        title: "Campo",
+        units: `${totalKm.toFixed(2)} km`,
+        pct: "35,2%",
+        pctVal: 35.2,
+        fillClass: "fill-campo",
+        badgeText: "35,2%",
+        presupuesto: "$ 620.000.000",
+        ejecutado: "$ 218.400.000",
+        status: "En ejecución"
+      },
+      {
+        iconFontAwesome: "fa-triangle-exclamation",
+        avatarClass: "avatar-senalizacion",
+        title: "Señalización y otros",
+        units: `${totalKm.toFixed(2)} km`,
+        pct: "18,7%",
+        pctVal: 18.7,
+        fillClass: "fill-senalizacion",
+        badgeText: "18,7%",
+        presupuesto: "$ 310.000.000",
+        ejecutado: "$ 57.900.000",
+        status: "En ejecución"
+      }
+    ];
+
+    return cards.map(c => `
+      <div class="summary-activity-card">
+        <div class="summary-card-top">
+          <div class="lane-avatar ${c.avatarClass}" style="width: 28px; height: 28px; font-size: 0.8rem;">
+            ${c.iconLetter ? `<span class="avatar-letter">${c.iconLetter}</span>` : `<i class="fas ${c.iconFontAwesome}"></i>`}
+          </div>
+          <div class="summary-card-texts">
+            <h5 class="summary-card-title">${c.title}</h5>
+            <span class="summary-card-units">${c.units}</span>
+          </div>
+        </div>
+
+        <div class="summary-card-progress">
+          <div class="summary-card-pct-row">
+            <span class="summary-card-pct">${c.pct}</span>
+            <span class="summary-card-badge">${c.badgeText}</span>
+          </div>
+          <div class="lane-progress-bar-bg" style="height: 5px;">
+            <div class="lane-progress-bar-fill ${c.fillClass}" style="width: ${c.pctVal}%;"></div>
+          </div>
+        </div>
+
+        <div class="summary-card-financials">
+          <div>
+            <span>Presupuesto:</span>
+            <strong>${c.presupuesto}</strong>
+          </div>
+          <div>
+            <span>Ejecutado:</span>
+            <strong>${c.ejecutado}</strong>
+          </div>
+        </div>
+
+        <div class="summary-card-status-dot-row">
+          <span class="status-dot"></span> ${c.status}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* --------------------------------------------------------------------------
+     STATION DETAIL SIDEBAR INSPECTOR
+     -------------------------------------------------------------------------- */
+
+  updateStationPanel(km, totalKm, puntos) {
+    const body = this.container.querySelector('#stationPanelBody');
+    if (!body) return;
+
+    const stationStr = this.formatAbscissa(km);
+    const corridorName = (this.currentCorridor && (this.currentCorridor.nombre || this.currentCorridor.name)) 
+                         || "Abejorral – Santa Bárbara – El Cairo – La Elvira";
+
+    // Detect intersecting activities at currentKm
+    const intersecting = [];
+
+    // 1. Drenaje y Obras
+    intersecting.push({
+      cat: "Drenaje",
+      name: "Cunetas en concreto",
+      range: `K0+000 - ${this.formatAbscissa(totalKm)} (0,0% ejec. · Pendiente vaciado)`,
+      dotClass: "dot-drenaje"
+    });
+
+    if (km >= 0.086 && km <= 1.250) {
+      intersecting.push({
+        cat: "Drenaje",
+        name: "Filtro longitudinal granular",
+        range: "K0+086 - K1+250 (1.164 ml ejecutados)",
+        dotClass: "dot-drenaje"
+      });
+    }
+
+    const culverts = puntos.filter(p => p.categoria === 'alcantarilla' || p.categoria === 'alcantarilla_nueva' || p.categoria === 'anulada');
+    let nearestCulvert = culverts[0];
+    let minDist = culverts.length > 0 ? Math.abs(culverts[0].km - km) : 999;
+    for (let i = 1; i < culverts.length; i++) {
+      const d = Math.abs(culverts[i].km - km);
+      if (d < minDist) {
+        minDist = d;
+        nearestCulvert = culverts[i];
+      }
+    }
+
+    if (minDist <= 0.45 && nearestCulvert) {
+      const isNew = nearestCulvert.categoria === 'alcantarilla_nueva';
+      const isAnulada = nearestCulvert.categoria === 'anulada';
+      const tag = isNew ? 'Nueva' : (isAnulada ? 'Anulada' : 'Reposición');
+      intersecting.push({
+        cat: "Drenaje",
+        name: `Alcantarilla (${tag}) - ${nearestCulvert.nombre}`,
+        range: `${nearestCulvert.abscisa} (a ${Math.round(minDist * 1000)} m)`,
+        dotClass: "dot-drenaje"
+      });
+    }
+
+    // 2. Estructura de pavimento
+    if (km <= 1.2) {
+      intersecting.push({
+        cat: "Estructura",
+        name: "Rodadura - TSD (Tratamiento Superficial)",
+        range: "K0+000 - K1+200 (1,2 km)",
+        dotClass: "dot-estructura"
+      });
+    } else if (km <= 3.8) {
+      intersecting.push({
+        cat: "Estructura",
+        name: "Rodadura - MDC-19 Mezcla Densa en Caliente",
+        range: "K1+200 - K3+800 (2,6 km · Pendiente > 8%)",
+        dotClass: "dot-estructura"
+      });
+    } else if (km <= 5.5) {
+      intersecting.push({
+        cat: "Estructura",
+        name: "Rodadura - TSD K3+800",
+        range: "K3+800 - K5+500 (1,7 km)",
+        dotClass: "dot-estructura"
+      });
+    } else {
+      intersecting.push({
+        cat: "Estructura",
+        name: "Rodadura - TSD Proyectado",
+        range: `K5+500 - ${this.formatAbscissa(totalKm)}`,
+        dotClass: "dot-estructura"
+      });
+    }
+
+    if (km <= 3.5) {
+      intersecting.push({
+        cat: "Estructura",
+        name: "Base Cemento MGTC (20 a 28 cm)",
+        range: "K0+000 - K3+500 (3,5 km)",
+        dotClass: "dot-estructura"
+      });
+    }
+
+    if (km <= 1.8) {
+      intersecting.push({
+        cat: "Estructura",
+        name: "Subrasante con Cal al 3%",
+        range: "K0+000 - K1+800 (1,8 km)",
+        dotClass: "dot-estructura"
+      });
+    } else if (km >= 15.0) {
+      intersecting.push({
+        cat: "Estructura",
+        name: "Subrasante con Cal (Sector El Cairo)",
+        range: `K15+000 - ${this.formatAbscissa(totalKm)} (8,77 km)`,
+        dotClass: "dot-estructura"
+      });
+    }
+
+    // 3. Campo y Geotecnia
+    if (km <= 16.0) {
+      intersecting.push({
+        cat: "Campo",
+        name: "Topografía (Ejecutada · 67,31%)",
+        range: "K0+000 - K16+000 (16 km levantados)",
+        dotClass: "dot-campo"
+      });
+    } else {
+      intersecting.push({
+        cat: "Campo",
+        name: "Topografía (Pendiente de levantar)",
+        range: `K16+000 - ${this.formatAbscissa(totalKm)}`,
+        dotClass: "dot-campo"
+      });
+    }
+
+    if (km <= 21.0) {
+      intersecting.push({
+        cat: "Campo",
+        name: "Exploración Geotécnica con Apiques (88,35%)",
+        range: "K0+000 - K21+000 (21 km explorados)",
+        dotClass: "dot-campo"
+      });
+    }
+
+    // Find closest photographic evidence
+    const photos = (this.currentCorridor && this.currentCorridor.registro_fotografico) || [];
+    let photoObj = null;
+    if (photos.length > 0) {
+      photoObj = photos.reduce((prev, curr) => {
+        const pDist = Math.abs((prev.km_aprox || 0) - km);
+        const cDist = Math.abs((curr.km_aprox || 0) - km);
+        return cDist < pDist ? curr : prev;
+      });
+    } else if (nearestCulvert && nearestCulvert.foto) {
+      photoObj = {
+        archivo: nearestCulvert.foto,
+        titulo: nearestCulvert.nombre,
+        abscisa: nearestCulvert.abscisa
+      };
+    }
+
+    // Update Floating Tooltip on the sync needle
+    const tooltipActivitiesList = this.container.querySelector('#tooltipActivitiesList');
+    if (tooltipActivitiesList) {
+      tooltipActivitiesList.innerHTML = intersecting.map(act => `
+        <li class="tooltip-act-item">
+          <span class="tooltip-dot ${act.dotClass}"></span>
+          <span>${act.name}</span>
+        </li>
+      `).join('');
+    }
+
+    // Populate Sidebar Body
+    body.innerHTML = `
+      <!-- Station Hero -->
+      <div class="station-hero">
+        <div class="station-hero-main">
+          <i class="fas fa-location-dot station-hero-icon"></i>
+          <div>
+            <div class="station-hero-title-row">
+              <h2 class="station-hero-name">${stationStr}</h2>
+              <span class="station-hero-badge">En progreso</span>
+            </div>
+            <span class="station-hero-sub">Abscisa / Progresiva</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Información general -->
+      <div class="station-section">
+        <h5 class="station-section-heading">Información general</h5>
+        <div class="station-info-grid">
+          <div class="info-label">Vía</div>
+          <div class="info-value">${corridorName}</div>
+          <div class="info-label">Abscisa</div>
+          <div class="info-value">${stationStr}</div>
+          <div class="info-label">Unidad</div>
+          <div class="info-value">km</div>
+          <div class="info-label">Estado</div>
+          <div class="info-value status-badge-inline">
+            <span class="status-dot"></span> En ejecución
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Actividades que intersectan -->
+      <div class="station-section">
+        <h5 class="station-section-heading">Actividades que intersectan</h5>
+        <div class="station-activities-list">
+          ${intersecting.map(act => `
+            <div class="station-act-item">
+              <div class="station-act-item-left">
+                <span class="tooltip-dot ${act.dotClass}"></span>
+                <div>
+                  <div class="station-act-name">${act.name}</div>
+                  <div class="station-act-sub">${act.range}</div>
+                </div>
+              </div>
+              <span class="station-act-badge">
+                <span class="status-dot"></span> En ejecución
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Section: Evidencia fotográfica -->
+      <div class="station-section">
+        <h5 class="station-section-heading">Evidencia fotográfica</h5>
+        ${photoObj ? `
+          <div class="station-photo-card" id="btnOpenPhotoStation">
+            <img src="${encodeURI(photoObj.archivo)}" alt="${photoObj.titulo || 'Registro de obra'}" onerror="this.src='Registro fotográfico/E18/foto_01_alcantarilla_k0+579.jpg'" />
+            <div class="station-photo-badge">
+              <i class="fas fa-camera"></i> ${photoObj.abscisa || stationStr}
+            </div>
+          </div>
+          <a href="javascript:void(0)" class="station-photo-link" id="linkGalleryStation">
+            <i class="fas fa-images"></i> Ver galería (${photos.length || 4}) →
+          </a>
+        ` : `
+          <div class="station-photo-card" style="display: flex; align-items: center; justify-content: center; background: var(--bg-subtle); color: var(--text-muted); font-size: 0.78rem;">
+            <span><i class="fas fa-camera-slash"></i> Sin registro en ${stationStr}</span>
+          </div>
+        `}
+      </div>
+
+      <!-- Section: Presupuesto / Avance -->
+      <div class="station-section">
+        <h5 class="station-section-heading">Presupuesto / Avance</h5>
+        <div class="station-budget-box">
+          <div class="station-budget-row">
+            <span>Presupuesto (COP)</span>
+            <strong>$ 1.250.000.000</strong>
+          </div>
+          <div class="station-budget-row">
+            <span>Ejecutado (COP)</span>
+            <strong>$ 98.750.000</strong>
+          </div>
+          <div style="margin-top: 4px;">
+            <div class="station-progress-labels">
+              <span>Avance físico</span>
+              <strong>2,58%</strong>
+            </div>
+            <div class="station-mini-bar-bg">
+              <div class="station-mini-bar-fill" style="width: 2.58%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Attach photo clicks to lightbox
+    const photoCard = body.querySelector('#btnOpenPhotoStation');
+    const galleryLink = body.querySelector('#linkGalleryStation');
+    const triggerLightbox = () => {
+      if (window.app && photoObj) {
+        window.app.openPhotoLightbox(photoObj);
+      }
+    };
+    if (photoCard) photoCard.addEventListener('click', triggerLightbox);
+    if (galleryLink) galleryLink.addEventListener('click', triggerLightbox);
+  }
+
+  /* --------------------------------------------------------------------------
+     UPDATE MARKER & SYNCHRONIZED NEEDLE
+     -------------------------------------------------------------------------- */
+
+  updateMarker(km, totalKm, puntos) {
+    this.currentKm = Math.min(totalKm, Math.max(0, km));
+    const pct = (this.currentKm / totalKm) * 100;
+    const stationStr = this.formatAbscissa(this.currentKm);
+
+    // 1. Move Pin on Forest Green Ruler
+    const rulerPin = this.container.querySelector('#rulerPinIndicator');
+    if (rulerPin) rulerPin.style.left = `${pct}%`;
+
+    // 2. Move Synchronized Red Needle across all lanes
+    // The lanes wrapper has 240px + 1rem (16px) left meta card, and the track is the remaining width.
+    const needle = this.container.querySelector('#stripSyncNeedle');
+    if (needle) {
+      needle.style.left = `calc(240px + 1rem + ((100% - 240px - 1rem) * ${(this.currentKm / totalKm).toFixed(5)}))`;
+    }
+
+    // 3. Update Station Text in Floating Tooltip and Bottom Badge
+    const tooltipText = this.container.querySelector('#tooltipStationText');
+    if (tooltipText) tooltipText.innerText = stationStr;
+
+    const bottomBadge = this.container.querySelector('#needleBottomBadge');
+    if (bottomBadge) bottomBadge.innerText = stationStr;
+
+    // 4. Update Reopen Button text
+    const reopenBtn = this.container.querySelector('#btnReopenStationPanel');
+    if (reopenBtn) reopenBtn.innerHTML = `<i class="fas fa-location-dot"></i> Ver detalle de estación (${stationStr})`;
+
+    // 5. Update Station Inspector Sidebar
+    this.updateStationPanel(this.currentKm, totalKm, puntos);
+  }
+
+  /* --------------------------------------------------------------------------
+     EVENT LISTENERS & USER INTERACTIONS
+     -------------------------------------------------------------------------- */
+
+  attachEvents(totalKm, puntos) {
+    // 1. Filter Pills
+    const pillsContainer = this.container.querySelector('#stripCategoryPills');
+    if (pillsContainer) {
+      pillsContainer.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          pillsContainer.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const cat = btn.getAttribute('data-category');
+          this.applyCategoryFilter(cat);
+        });
+      });
+    }
+
+    // 2. Mode Toggle (Avance, Cantidades, Evidencias)
+    const modeContainer = this.container.querySelector('#stripModeToggle');
+    if (modeContainer) {
+      modeContainer.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modeContainer.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.activeMode = btn.getAttribute('data-mode');
+          this.applyMode(this.activeMode);
+        });
+      });
+    }
+
+    // 3. Zoom Controls
+    const zoomReset = this.container.querySelector('#stripZoomReset');
+    const zoomIn = this.container.querySelector('#stripZoomIn');
+    const zoomOut = this.container.querySelector('#stripZoomOut');
+
+    if (zoomReset) {
+      zoomReset.addEventListener('click', () => {
+        this.zoomLevel = 1.0;
+        this.applyZoom();
+      });
+    }
+    if (zoomIn) {
+      zoomIn.addEventListener('click', () => {
+        this.zoomLevel = Math.min(3.0, this.zoomLevel + 0.5);
+        this.applyZoom();
+      });
+    }
+    if (zoomOut) {
+      zoomOut.addEventListener('click', () => {
+        this.zoomLevel = Math.max(1.0, this.zoomLevel - 0.5);
+        this.applyZoom();
+      });
+    }
+
+    // 4. Abscissa Search Box
+    const searchInput = this.container.querySelector('#stripAbscissaSearch');
+    if (searchInput) {
+      const handleSearch = () => {
+        const val = searchInput.value.trim();
+        if (!val) return;
+        const km = this.parseAbscissaToKm(val);
+        if (km !== null && !isNaN(km)) {
+          this.updateMarker(km, totalKm, puntos);
+          this.openStationPanel();
+        }
+      };
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSearch();
+      });
+      searchInput.addEventListener('change', handleSearch);
+    }
+
+    // 5. Click / Drag interaction on Forest Green Ruler Bar
+    const rulerBar = this.container.querySelector('#forestRulerBar');
+    if (rulerBar) {
+      rulerBar.addEventListener('click', (e) => {
+        const rect = rulerBar.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        this.updateMarker(pct * totalKm, totalKm, puntos);
+      });
+    }
+
+    // 6. Click on Any Graphic Lane Track
+    this.container.querySelectorAll('.lane-track-card').forEach(track => {
+      track.addEventListener('click', (e) => {
+        const rect = track.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        this.updateMarker(pct * totalKm, totalKm, puntos);
+      });
+    });
+
+    // 7. Click on Sub-track Points & Milestone Nodes (Alcantarillas, Apiques, Filtros)
+    this.container.querySelectorAll('.subtrack-point-node, .lane-milestone-node').forEach(node => {
+      node.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const km = parseFloat(node.getAttribute('data-km'));
+        if (!isNaN(km)) {
+          this.updateMarker(km, totalKm, puntos);
+          this.openStationPanel();
+        }
+      });
+    });
+
+    // 8. Click on Sub-track Progress Bars & Filter Spans
+    this.container.querySelectorAll('.subtrack-bar, .filter-span-band').forEach(bar => {
+      bar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const start = parseFloat(bar.getAttribute('data-start'));
+        if (!isNaN(start)) {
+          this.updateMarker(start, totalKm, puntos);
+          this.openStationPanel();
+        }
+      });
+    });
+
+    // 9. Click on Purple Pins (Señalización)
+    this.container.querySelectorAll('.lane-purple-pin').forEach(pin => {
+      pin.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const km = parseFloat(pin.getAttribute('data-km'));
+        if (!isNaN(km)) {
+          this.updateMarker(km, totalKm, puntos);
+          this.openStationPanel();
+        }
+      });
+    });
+
+    // 10. Floating Tooltip Action: "Ver detalle de estación"
+    const tooltipInspect = this.container.querySelector('#tooltipInspectAction');
+    if (tooltipInspect) {
+      tooltipInspect.addEventListener('click', () => {
+        this.openStationPanel();
+      });
+    }
+
+    // 11. Station Panel Close & Reopen
+    const closeBtn = this.container.querySelector('#stationPanelCloseBtn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        this.closeStationPanel();
+      });
+    }
+
+    const reopenBtn = this.container.querySelector('#btnReopenStationPanel');
+    if (reopenBtn) {
+      reopenBtn.addEventListener('click', () => {
+        this.openStationPanel();
+      });
+    }
+
+    // 12. Bottom "Ver detalle completo" Link (Expands Inventory Table)
+    const summaryExpand = this.container.querySelector('#stripSummaryExpandLink');
+    const inventorySection = this.container.querySelector('#stripInventoryCollapsible');
+    const closeInventoryBtn = this.container.querySelector('#btnCloseInventory');
+
+    if (summaryExpand && inventorySection) {
+      summaryExpand.addEventListener('click', () => {
+        const isHidden = inventorySection.style.display === 'none';
+        inventorySection.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+          inventorySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+
+    if (closeInventoryBtn && inventorySection) {
+      closeInventoryBtn.addEventListener('click', () => {
+        inventorySection.style.display = 'none';
+      });
+    }
+
+    // 13. Inventory Search Input
+    const tableSearch = this.container.querySelector('#inventoryTableSearch');
+    if (tableSearch) {
+      tableSearch.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        this.container.querySelectorAll('.inventory-table-row').forEach(row => {
+          row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
+        });
+      });
+    }
+
+    // 14. Ubicar buttons in Table
+    this.container.querySelectorAll('.btn-locate-row').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const km = parseFloat(btn.getAttribute('data-km'));
+        this.updateMarker(km, totalKm, puntos);
+        this.openStationPanel();
+        this.container.querySelector('.strip-chart-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
+  /* --------------------------------------------------------------------------
+     PANEL, ZOOM, CATEGORY & MODE HELPERS
+     -------------------------------------------------------------------------- */
+
+  openStationPanel() {
+    this.panelOpen = true;
+    const split = this.container.querySelector('#stripMainSplit');
+    if (split) split.classList.remove('panel-collapsed');
+
+    const reopenContainer = this.container.querySelector('#reopenPanelContainer');
+    if (reopenContainer) reopenContainer.style.display = 'none';
+  }
+
+  closeStationPanel() {
+    this.panelOpen = false;
+    const split = this.container.querySelector('#stripMainSplit');
+    if (split) split.classList.add('panel-collapsed');
+
+    const reopenContainer = this.container.querySelector('#reopenPanelContainer');
+    if (reopenContainer) reopenContainer.style.display = 'flex';
+  }
+
+  applyZoom() {
+    const lanesWrapper = this.container.querySelector('#lanesContentWrapper');
+    const rulerWrapper = this.container.querySelector('#rulerTrackWrapper');
+
+    if (lanesWrapper) {
+      lanesWrapper.style.minWidth = `${this.zoomLevel * 100}%`;
+    }
+    if (rulerWrapper) {
+      rulerWrapper.style.minWidth = `${this.zoomLevel * 100}%`;
+    }
+
+    // Keep sync needle aligned during zoom
+    const totalKm = (this.currentCorridor && this.currentCorridor.longitud_contractual_km) || 23.77;
+    const pct = this.currentKm / totalKm;
+    const needle = this.container.querySelector('#stripSyncNeedle');
+    if (needle) {
+      needle.style.left = `calc(240px + 1rem + ((100% - 240px - 1rem) * ${pct.toFixed(5)}))`;
+    }
+  }
+
+  applyCategoryFilter(cat) {
+    this.activeCategory = cat;
+    const laneRows = this.container.querySelectorAll('.strip-lane-row');
+
+    laneRows.forEach(row => {
+      const laneKey = row.getAttribute('data-lane');
+      if (cat === 'all') {
+        row.style.opacity = '1';
+        row.style.filter = 'none';
+      } else if (laneKey === cat) {
+        row.style.opacity = '1';
+        row.style.filter = 'none';
+      } else {
+        row.style.opacity = '0.28';
+        row.style.filter = 'grayscale(60%)';
+      }
+    });
+  }
+
+  applyMode(mode) {
+    // Mode highlights
+    if (mode === 'evidencias') {
+      this.container.querySelectorAll('.subtrack-point-node, .lane-milestone-node').forEach(node => {
+        if (node.classList.contains('point-has-photo') || node.classList.contains('node-has-photo')) {
+          node.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.95)';
+          node.style.transform = 'translate(-50%, -50%) scale(1.35)';
+          node.style.zIndex = '35';
+        }
+      });
+    } else {
+      this.container.querySelectorAll('.subtrack-point-node, .lane-milestone-node').forEach(node => {
+        node.style.boxShadow = '';
+        node.style.transform = '';
+        node.style.zIndex = '';
+      });
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+     INVENTORY TABLE ROWS (PRESERVING COMPREHENSIVE REGISTRY)
+     -------------------------------------------------------------------------- */
+
+  renderInventoryTableRows(puntos) {
     if (!puntos || puntos.length === 0) {
-      return `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay puntos singulares registrados.</td></tr>`;
+      return `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay puntos registrados.</td></tr>`;
     }
 
     return puntos.map(p => {
       const isNew = p.categoria === 'alcantarilla_nueva';
       const isAnulada = p.categoria === 'anulada';
-      let catColor = '#0284c7';
-      if (isNew) catColor = '#2563eb';
-      if (isAnulada) catColor = '#ef4444';
-      if (p.categoria === 'filtro') catColor = '#2563eb';
+      let tagBg = 'rgba(5, 150, 105, 0.1)';
+      let tagColor = '#059669';
+
+      if (isNew) {
+        tagBg = 'rgba(37, 99, 235, 0.1)';
+        tagColor = '#2563eb';
+      } else if (isAnulada) {
+        tagBg = 'rgba(239, 68, 68, 0.1)';
+        tagColor = '#ef4444';
+      }
 
       return `
-        <tr data-km="${p.km}" data-cat="${p.categoria}" class="inventory-row">
+        <tr class="inventory-table-row" data-km="${p.km}">
           <td>
-            <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.82rem; background: var(--bg-subtle); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-subtle); ${isNew ? 'color: #2563eb; border-color: #2563eb;' : ''}">
+            <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.82rem; background: var(--bg-subtle); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-subtle); ${isNew ? 'color: #2563eb;' : ''}">
               ${p.abscisa}
             </span>
           </td>
@@ -477,18 +1410,18 @@ class AbscissasManager {
             <strong style="color: var(--text-primary); font-size: 0.8rem;">${p.tipo}</strong>
           </td>
           <td>
-            <span class="tag-badge" style="background: rgba(4, 120, 87, 0.08); color: ${catColor}; font-weight: 700;">
+            <span class="tag-badge" style="background: ${tagBg}; color: ${tagColor}; font-weight: 700;">
               ${p.categoria}
             </span>
           </td>
           <td style="font-weight: 600; font-size: 0.8rem;">
-            ${p.nombre} ${p.foto ? '<i class="fas fa-camera" style="color: var(--brand-green); margin-left: 4px;" title="Tiene fotografía de obra"></i>' : ''}
+            ${p.nombre} ${p.foto ? '<i class="fas fa-camera" style="color: var(--brand-green); margin-left: 4px;" title="Registro fotográfico disponible"></i>' : ''}
           </td>
           <td style="font-size: 0.76rem; color: var(--text-secondary);">
             ${p.detalle}
           </td>
           <td style="text-align: right;">
-            <button class="btn-locate-pin" data-km="${p.km}" style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 3px 8px; font-size: 0.72rem; font-weight: 700; color: var(--brand-green); cursor: pointer;">
+            <button class="btn-locate-row" data-km="${p.km}" style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 3px 8px; font-size: 0.72rem; font-weight: 700; color: var(--brand-green); cursor: pointer;">
               <i class="fas fa-crosshairs"></i> Ubicar
             </button>
           </td>
@@ -497,337 +1430,28 @@ class AbscissasManager {
     }).join('');
   }
 
-  attachEvents(totalKm, puntos) {
-    const slider = this.container.querySelector('#scrubberSlider');
-    const roadTrack = this.container.querySelector('#roadRibbonTrack');
-    const stage = this.container.querySelector('#stripStage');
+  /* --------------------------------------------------------------------------
+     UTILITY: FORMATTING & PARSING ABSCISSAS
+     -------------------------------------------------------------------------- */
 
-    // Scrubber Slider drag
-    if (slider) {
-      slider.addEventListener('input', (e) => {
-        this.stopSimulation();
-        const km = parseFloat(e.target.value);
-        this.setMarkerKm(km, totalKm, puntos);
-      });
-    }
-
-    // Direct click / drag on Road Ribbon or any graphic band track
-    const handleTrackInteraction = (e) => {
-      const overlay = this.container.querySelector('#needleTrackOverlay');
-      if (overlay) {
-        const rect = overlay.getBoundingClientRect();
-        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        this.stopSimulation();
-        this.setMarkerKm(pct * totalKm, totalKm, puntos);
-      }
-    };
-
-    if (roadTrack) roadTrack.addEventListener('click', handleTrackInteraction);
-    this.container.querySelectorAll('.band-graphic-track').forEach(track => {
-      track.addEventListener('click', handleTrackInteraction);
-    });
-
-    // Culvert Dots Click & Inspection Popover
-    this.container.querySelectorAll('.culvert-dot').forEach(dot => {
-      dot.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const km = parseFloat(dot.getAttribute('data-km'));
-        const idx = parseInt(dot.getAttribute('data-idx'), 10);
-        const p = puntos[idx];
-        this.setMarkerKm(km, totalKm, puntos);
-        this.showCulvertPopover(dot, p);
-      });
-    });
-
-    // Speed Selector Buttons
-    this.container.querySelectorAll('.sim-speed-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.container.querySelectorAll('.sim-speed-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.simSpeed = parseInt(btn.getAttribute('data-speed'), 10);
-      });
-    });
-
-    // Play / Pause Simulation
-    const playBtn = this.container.querySelector('#simPlayBtn');
-    if (playBtn) {
-      playBtn.addEventListener('click', () => {
-        if (this.isSimulating) {
-          this.pauseSimulation();
-          playBtn.innerHTML = '<i class="fas fa-play"></i> Reanudar';
-        } else {
-          this.startSimulation(totalKm, puntos);
-          playBtn.innerHTML = '<i class="fas fa-pause"></i> Pausar';
-        }
-      });
-    }
-
-    // Reset Button
-    const resetBtn = this.container.querySelector('#simResetBtn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        this.stopSimulation();
-        this.setMarkerKm(0, totalKm, puntos);
-        if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i> Simular Recorrido';
-      });
-    }
-
-    // Filter Pills Bar (Highlight specific band)
-    const filterBar = this.container.querySelector('#stripFilterBar');
-    if (filterBar) {
-      filterBar.querySelectorAll('.strip-filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          filterBar.querySelectorAll('.strip-filter-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const filter = btn.getAttribute('data-filter');
-          this.applyBandFilter(filter);
-        });
-      });
-    }
-
-    // Inventory Search Input
-    const searchInput = this.container.querySelector('#inventorySearchInput');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase().trim();
-        this.container.querySelectorAll('.inventory-row').forEach(row => {
-          const text = row.innerText.toLowerCase();
-          row.style.display = text.includes(val) ? '' : 'none';
-        });
-      });
-    }
-
-    // Locate Buttons in Table
-    this.container.querySelectorAll('.btn-locate-pin').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const km = parseFloat(btn.getAttribute('data-km'));
-        this.stopSimulation();
-        this.setMarkerKm(km, totalKm, puntos);
-
-        // Highlight matching dot
-        const targetDot = this.container.querySelector(`.culvert-dot[data-km="${km}"]`);
-        if (targetDot) {
-          const idx = parseInt(targetDot.getAttribute('data-idx'), 10);
-          this.showCulvertPopover(targetDot, puntos[idx]);
-        }
-      });
-    });
-
-    // Close popover when clicking anywhere else
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.culvert-dot') && !e.target.closest('.culvert-inspection-popover')) {
-        this.closeCulvertPopover();
-      }
-    });
+  formatAbscissa(km) {
+    if (isNaN(km) || km < 0) km = 0;
+    const kPart = Math.floor(km);
+    const mPart = Math.round((km - kPart) * 1000);
+    return `K${kPart}+${String(mPart).padStart(3, '0')}`;
   }
 
-  applyBandFilter(filterKey) {
-    this.activeFilter = filterKey;
-    const bandRows = this.container.querySelectorAll('.discipline-band-row');
-    bandRows.forEach(row => {
-      const bandName = row.getAttribute('data-band');
-      if (filterKey === 'all') {
-        row.style.opacity = '1';
-        row.style.borderColor = 'var(--border-subtle)';
-        row.style.background = 'var(--bg-subtle)';
-      } else if (bandName === filterKey) {
-        row.style.opacity = '1';
-        row.style.borderColor = 'var(--brand-green-light)';
-        row.style.background = '#ffffff';
-        row.style.boxShadow = '0 0 14px rgba(4, 120, 87, 0.18)';
-      } else {
-        row.style.opacity = '0.35';
-        row.style.borderColor = 'var(--border-subtle)';
-        row.style.background = 'var(--bg-subtle)';
-        row.style.boxShadow = 'none';
-      }
-    });
-  }
-
-  showCulvertPopover(dotElement, punto) {
-    this.closeCulvertPopover();
-    if (!punto) return;
-
-    const popover = document.createElement('div');
-    popover.className = 'culvert-inspection-popover';
-
-    const isNew = punto.categoria === 'alcantarilla_nueva';
-    const isAnulada = punto.categoria === 'anulada';
-    const badgeColor = isNew ? '#2563eb' : (isAnulada ? '#ef4444' : '#059669');
-
-    popover.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="background: var(--bg-subtle); font-family: var(--font-mono); font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 0.78rem;">
-          ${punto.abscisa}
-        </span>
-        <span style="font-size: 0.68rem; font-weight: 700; color: ${badgeColor}; text-transform: uppercase;">
-          ${punto.tipo}
-        </span>
-      </div>
-      <strong style="color: var(--text-primary); font-size: 0.85rem; line-height: 1.2;">${punto.nombre}</strong>
-      <p style="color: var(--text-secondary); font-size: 0.72rem; line-height: 1.35; margin: 0;">${punto.detalle}</p>
-      ${punto.foto ? `
-        <div style="margin-top: 4px; border-radius: 4px; overflow: hidden; height: 75px; position: relative;">
-          <img src="${encodeURI(punto.foto)}" alt="Foto de obra" style="width: 100%; height: 100%; object-fit: cover;" />
-          <span style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.62rem; padding: 1px 4px; border-radius: 2px;">
-            <i class="fas fa-camera"></i> Registro de Obra
-          </span>
-        </div>
-        <button class="btn-primary btn-popover-open-photo" style="width: 100%; padding: 4px 8px; font-size: 0.72rem; justify-content: center; margin-top: 4px;">
-          <i class="fas fa-expand"></i> Ver Registro Fotográfico
-        </button>
-      ` : ''}
-    `;
-
-    dotElement.appendChild(popover);
-    this.activePopover = popover;
-
-    // Attach click to open photo in lightbox if available
-    const openPhotoBtn = popover.querySelector('.btn-popover-open-photo');
-    if (openPhotoBtn && window.app) {
-      openPhotoBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const photos = (this.currentCorridor && this.currentCorridor.registro_fotografico) || [];
-        const photo = photos.find(ph => ph.abscisa === punto.abscisa) || photos[0];
-        if (photo) window.app.openPhotoLightbox(photo);
-      });
+  parseAbscissaToKm(str) {
+    if (!str) return null;
+    let clean = str.toUpperCase().replace('K', '').replace('PR', '').trim();
+    if (clean.includes('+')) {
+      const parts = clean.split('+');
+      const k = parseFloat(parts[0]) || 0;
+      const m = parseFloat(parts[1]) || 0;
+      return k + (m / 1000);
     }
-  }
-
-  closeCulvertPopover() {
-    if (this.activePopover) {
-      this.activePopover.remove();
-      this.activePopover = null;
-    }
-  }
-
-  startSimulation(totalKm, puntos) {
-    this.isSimulating = true;
-    if (this.currentKm >= totalKm) this.currentKm = 0;
-
-    const baseStep = totalKm / 200; // 200 frames across highway
-    const stepKm = baseStep * this.simSpeed;
-
-    this.simTimer = setInterval(() => {
-      this.currentKm += stepKm;
-      if (this.currentKm >= totalKm) {
-        this.currentKm = totalKm;
-        this.setMarkerKm(this.currentKm, totalKm, puntos);
-        this.stopSimulation();
-        const playBtn = this.container.querySelector('#simPlayBtn');
-        if (playBtn) playBtn.innerHTML = '<i class="fas fa-redo"></i> Repetir Recorrido';
-      } else {
-        this.setMarkerKm(this.currentKm, totalKm, puntos);
-      }
-    }, 50);
-  }
-
-  pauseSimulation() {
-    this.isSimulating = false;
-    if (this.simTimer) clearInterval(this.simTimer);
-  }
-
-  stopSimulation() {
-    this.isSimulating = false;
-    if (this.simTimer) clearInterval(this.simTimer);
-    this.simTimer = null;
-  }
-
-  setMarkerKm(km, totalKm, puntos = []) {
-    this.currentKm = Math.min(totalKm, Math.max(0, km));
-    const pct = (this.currentKm / totalKm) * 100;
-
-    // 1. Move vehicle marker on Road Ribbon
-    const vehicle = this.container.querySelector('#roadRibbonVehicle');
-    if (vehicle) vehicle.style.left = `${pct}%`;
-
-    // 2. Move Synchronized Crosshair Needle (passes through all bands)
-    const needle = this.container.querySelector('#stripCrosshairNeedle');
-    if (needle) {
-      needle.style.left = `${pct}%`;
-    }
-
-    // 3. Update Scrubber Slider value
-    const slider = this.container.querySelector('#scrubberSlider');
-    if (slider) slider.value = this.currentKm;
-
-    // 4. Update HUD Odometer & Needle Badge
-    const kPart = Math.floor(this.currentKm);
-    const mPart = Math.round((this.currentKm - kPart) * 1000);
-    const stationStr = `K ${kPart} + ${String(mPart).padStart(3, '0')}`;
-
-    const hudOdo = this.container.querySelector('#stripOdometerText');
-    if (hudOdo) hudOdo.innerText = stationStr;
-
-    const needleBadge = this.container.querySelector('#needleBadge');
-    if (needleBadge) needleBadge.innerText = stationStr;
-
-    const scrubberBadgeRight = this.container.querySelector('#scrubberBadgeRight');
-    if (scrubberBadgeRight) scrubberBadgeRight.innerText = stationStr;
-
-    // 5. Update Active Chips in HUD
-    const hudChips = this.container.querySelector('#stripActiveChips');
-    if (hudChips) {
-      const activePills = [];
-      if (this.currentKm <= 16.0) {
-        activePills.push('<span class="tag-badge" style="background: rgba(5, 150, 105, 0.12); color: #047857; font-weight: 700;"><i class="fas fa-drafting-compass"></i> Topografía 100%</span>');
-      }
-      if (this.currentKm <= 21.0) {
-        activePills.push('<span class="tag-badge" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; font-weight: 700;"><i class="fas fa-hammer"></i> Geotecnia CBR</span>');
-      }
-      if (this.currentKm <= 1.8 || (this.currentKm >= 15.0 && this.currentKm <= totalKm)) {
-        activePills.push('<span class="tag-badge" style="background: rgba(146, 64, 14, 0.12); color: #92400e; font-weight: 700;"><i class="fas fa-mountain"></i> Subrasante Cal</span>');
-      }
-      if (this.currentKm >= 0.086 && this.currentKm <= 1.250) {
-        activePills.push('<span class="tag-badge" style="background: rgba(37, 99, 235, 0.12); color: #2563eb; font-weight: 700;"><i class="fas fa-filter"></i> Filtro 1.164 ml</span>');
-      }
-      if (this.currentKm <= 3.5) {
-        activePills.push('<span class="tag-badge" style="background: rgba(217, 119, 6, 0.12); color: #d97706; font-weight: 700;"><i class="fas fa-cubes"></i> Cemento MGTC</span>');
-      }
-      if (this.currentKm <= 1.2 || (this.currentKm >= 3.8 && this.currentKm <= 5.5)) {
-        activePills.push('<span class="tag-badge" style="background: rgba(30, 41, 59, 0.12); color: #1e293b; font-weight: 700;"><i class="fas fa-road"></i> Rodadura TSD</span>');
-      } else if (this.currentKm > 1.2 && this.currentKm <= 3.8) {
-        activePills.push('<span class="tag-badge" style="background: rgba(15, 23, 42, 0.15); color: #0f172a; font-weight: 700;"><i class="fas fa-fire"></i> MDC-19 Caliente</span>');
-      }
-
-      hudChips.innerHTML = activePills.length > 0 ? activePills.join('') : '<span style="font-size: 0.75rem; color: var(--text-muted);">Sin intervención activa en esta abscisa</span>';
-    }
-
-    // 6. Find nearest singular work
-    const hudNearest = this.container.querySelector('#stripNearestText');
-    if (hudNearest && puntos.length > 0) {
-      let nearest = puntos[0];
-      let minDist = Math.abs(puntos[0].km - this.currentKm);
-
-      for (let i = 1; i < puntos.length; i++) {
-        const dist = Math.abs(puntos[i].km - this.currentKm);
-        if (dist < minDist) {
-          minDist = dist;
-          nearest = puntos[i];
-        }
-      }
-
-      const distM = Math.round(minDist * 1000);
-      hudNearest.innerHTML = `${nearest.abscisa} · ${nearest.nombre} <span style="font-size: 0.72rem; color: var(--text-muted);">(${distM} m)</span>`;
-    }
-
-    // 7. Update Status description in HUD
-    const hudStatus = this.container.querySelector('#stripStatusText');
-    if (hudStatus) {
-      if (this.currentKm < 1.25) {
-        hudStatus.innerText = 'Frente Activo: Filtros granulares longitudinales (K0+086 a K1+250) y reposición de alcantarillas';
-      } else if (this.currentKm < 3.5) {
-        hudStatus.innerText = 'Sector de Obra Nueva: K 3+105 (Alcantarilla 36 pulg.) y plataforma estabilizada con cemento MGTC';
-      } else if (this.currentKm < 8.0) {
-        hudStatus.innerText = 'Sector de pendiente > 8%: Carpeta proyectada en Mezcla Densa en Caliente (MDC-19)';
-      } else if (this.currentKm < 16.0) {
-        hudStatus.innerText = 'Frente de topografía finalizada y limpieza de obras hidráulicas';
-      } else if (this.currentKm < 21.0) {
-        hudStatus.innerText = 'Sector con exploración geotécnica completa (CBR 1,2% a 38,6%)';
-      } else {
-        hudStatus.innerText = 'Adecuación de plataforma y acceso a La Elvira';
-      }
-    }
+    const num = parseFloat(clean);
+    return isNaN(num) ? null : num;
   }
 
   getDefaultPuntos(c) {

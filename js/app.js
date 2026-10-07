@@ -274,8 +274,8 @@ class AppController {
     // Render Photographic Registry
     this.renderPhotoGallery(corridor);
 
-    // Map flyTo
-    if (this.mapManager) {
+    // Map flyTo only when explicitly navigating to corridor
+    if (this.mapManager && switchTab) {
       this.mapManager.highlightCorridor(corridor.code || corridor.id);
     }
 
